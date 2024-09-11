@@ -1,0 +1,50 @@
+{
+  "version": "2",
+  "sql": [{
+    "schema": "./migrations/",
+    "queries": "./sqlc/query/",
+    "engine": "postgresql",
+    "database":{
+      "uri": "postgresql://localhost:5432/go-flare?sslmode=disable"
+    },
+    "gen": {
+      "go": {
+        "out": "./sqlc",
+        "package": "sqlc",
+        "emit_interface": true,
+        "emit_exact_table_names": false,
+        "emit_empty_slices": true,
+        "emit_pointers_for_null_types": true,
+        "emit_result_struct_pointers": true,
+        "emit_enum_valid_method": true,
+        "emit_json_tags": true,
+        "emit_prepared_queries": true,
+        "json_tags_case_style": "camel",
+        "sql_package": "pgx/v5",
+        "overrides": [
+          {
+            "column": "*.id",
+            "go_type": "uint32"
+          },
+          {
+            "column": "*.user_id",
+            "go_type": "uint32"
+          },
+          {
+            "column": "*.role_id",
+            "go_type": "uint32"
+          },
+          {
+            "column": "*.permission_id",
+            "go_type": "uint32"
+          }
+        ]
+      }
+    },
+    "rules": [
+      "sqlc/db-prepare",
+      "postgresql-query-too-costly"
+    ]
+  }]
+}
+
