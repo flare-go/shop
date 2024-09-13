@@ -7,95 +7,15 @@ package sqlc
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
-
-const createStock = `-- name: CreateStock :one
-INSERT INTO stocks (product_id, quantity, reserved_quantity, location)
-VALUES ($1, $2, $3, $4)
-RETURNING id, product_id, quantity, reserved_quantity, location, created_at, updated_at
-`
-
-type CreateStockParams struct {
-	ProductID        string  `json:"productId"`
-	Quantity         int32   `json:"quantity"`
-	ReservedQuantity int32   `json:"reservedQuantity"`
-	Location         *string `json:"location"`
-}
-
-func (q *Queries) CreateStock(ctx context.Context, arg CreateStockParams) (*Stock, error) {
-	row := q.db.QueryRow(ctx, createStock,
-		arg.ProductID,
-		arg.Quantity,
-		arg.ReservedQuantity,
-		arg.Location,
-	)
-	var i Stock
-	err := row.Scan(
-		&i.ID,
-		&i.ProductID,
-		&i.Quantity,
-		&i.ReservedQuantity,
-		&i.Location,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return &i, err
-}
-
-const createStockMovement = `-- name: CreateStockMovement :one
-INSERT INTO stock_movements (stock_id, quantity, type, reference_type, reference_id)
-VALUES ($1, $2, $3, $4, $5)
-RETURNING id, stock_id, quantity, type, reference_type, reference_id, created_at
-`
-
-type CreateStockMovementParams struct {
-	StockID       int32                          `json:"stockId"`
-	Quantity      int32                          `json:"quantity"`
-	Type          StockMovementType              `json:"type"`
-	ReferenceType NullStockMovementReferenceType `json:"referenceType"`
-	ReferenceID   *int32                         `json:"referenceId"`
-}
-
-type CreateStockMovementRow struct {
-	ID            uint32                         `json:"id"`
-	StockID       int32                          `json:"stockId"`
-	Quantity      int32                          `json:"quantity"`
-	Type          StockMovementType              `json:"type"`
-	ReferenceType NullStockMovementReferenceType `json:"referenceType"`
-	ReferenceID   *int32                         `json:"referenceId"`
-	CreatedAt     pgtype.Timestamptz             `json:"createdAt"`
-}
-
-func (q *Queries) CreateStockMovement(ctx context.Context, arg CreateStockMovementParams) (*CreateStockMovementRow, error) {
-	row := q.db.QueryRow(ctx, createStockMovement,
-		arg.StockID,
-		arg.Quantity,
-		arg.Type,
-		arg.ReferenceType,
-		arg.ReferenceID,
-	)
-	var i CreateStockMovementRow
-	err := row.Scan(
-		&i.ID,
-		&i.StockID,
-		&i.Quantity,
-		&i.Type,
-		&i.ReferenceType,
-		&i.ReferenceID,
-		&i.CreatedAt,
-	)
-	return &i, err
-}
 
 const getStock = `-- name: GetStock :one
 SELECT id, product_id, quantity, reserved_quantity, location, created_at, updated_at
 FROM stocks
-WHERE id = $1 LIMIT 1
+WHERE id = $1
 `
 
-func (q *Queries) GetStock(ctx context.Context, id uint32) (*Stock, error) {
+func (q *Queries) GetStock(ctx context.Context, id int32) (*Stock, error) {
 	row := q.db.QueryRow(ctx, getStock, id)
 	var i Stock
 	err := row.Scan(
@@ -110,37 +30,35 @@ func (q *Queries) GetStock(ctx context.Context, id uint32) (*Stock, error) {
 	return &i, err
 }
 
-const listStocks = `-- name: ListStocks :many
-SELECT id, product_id, quantity, reserved_quantity, location, created_at, updated_at
-FROM stocks
-WHERE product_id = $1
+const getStockMovementsByReference = `-- name: GetStockMovementsByReference :many
+SELECT id, stock_id, quantity, type, reference_id, reference_type, created_at
+FROM stock_movements
+WHERE reference_type = $1 AND reference_id = $2
 ORDER BY created_at DESC
-LIMIT $2 OFFSET $3
 `
 
-type ListStocksParams struct {
-	ProductID string `json:"productId"`
-	Limit     int64  `json:"limit"`
-	Offset    int64  `json:"offset"`
+type GetStockMovementsByReferenceParams struct {
+	ReferenceType NullStockMovementReferenceType `json:"referenceType"`
+	ReferenceID   *int32                         `json:"referenceId"`
 }
 
-func (q *Queries) ListStocks(ctx context.Context, arg ListStocksParams) ([]*Stock, error) {
-	rows, err := q.db.Query(ctx, listStocks, arg.ProductID, arg.Limit, arg.Offset)
+func (q *Queries) GetStockMovementsByReference(ctx context.Context, arg GetStockMovementsByReferenceParams) ([]*StockMovement, error) {
+	rows, err := q.db.Query(ctx, getStockMovementsByReference, arg.ReferenceType, arg.ReferenceID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []*Stock{}
+	items := []*StockMovement{}
 	for rows.Next() {
-		var i Stock
+		var i StockMovement
 		if err := rows.Scan(
 			&i.ID,
-			&i.ProductID,
+			&i.StockID,
 			&i.Quantity,
-			&i.ReservedQuantity,
-			&i.Location,
+			&i.Type,
+			&i.ReferenceID,
+			&i.ReferenceType,
 			&i.CreatedAt,
-			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -152,36 +70,44 @@ func (q *Queries) ListStocks(ctx context.Context, arg ListStocksParams) ([]*Stoc
 	return items, nil
 }
 
-const updateStock = `-- name: UpdateStock :one
-UPDATE stocks
-SET quantity = $2, reserved_quantity = $3, location = $4, updated_at = NOW()
-WHERE id = $1
-RETURNING id, product_id, quantity, reserved_quantity, location, created_at, updated_at
+const listStockMovements = `-- name: ListStockMovements :many
+SELECT id, stock_id, quantity, type, reference_id, reference_type, created_at
+FROM stock_movements
+WHERE stock_id = $1
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3
 `
 
-type UpdateStockParams struct {
-	ID               uint32  `json:"id"`
-	Quantity         int32   `json:"quantity"`
-	ReservedQuantity int32   `json:"reservedQuantity"`
-	Location         *string `json:"location"`
+type ListStockMovementsParams struct {
+	StockID uint64 `json:"stockId"`
+	Limit   int64  `json:"limit"`
+	Offset  int64  `json:"offset"`
 }
 
-func (q *Queries) UpdateStock(ctx context.Context, arg UpdateStockParams) (*Stock, error) {
-	row := q.db.QueryRow(ctx, updateStock,
-		arg.ID,
-		arg.Quantity,
-		arg.ReservedQuantity,
-		arg.Location,
-	)
-	var i Stock
-	err := row.Scan(
-		&i.ID,
-		&i.ProductID,
-		&i.Quantity,
-		&i.ReservedQuantity,
-		&i.Location,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return &i, err
+func (q *Queries) ListStockMovements(ctx context.Context, arg ListStockMovementsParams) ([]*StockMovement, error) {
+	rows, err := q.db.Query(ctx, listStockMovements, arg.StockID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []*StockMovement{}
+	for rows.Next() {
+		var i StockMovement
+		if err := rows.Scan(
+			&i.ID,
+			&i.StockID,
+			&i.Quantity,
+			&i.Type,
+			&i.ReferenceID,
+			&i.ReferenceType,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

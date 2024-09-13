@@ -7,51 +7,67 @@ package sqlc
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const createCategory = `-- name: CreateCategory :one
-INSERT INTO categories (name, description, parent_id)
-VALUES ($1, $2, $3)
-RETURNING id, name, description, parent_id, created_at, updated_at
+const assignProductToCategory = `-- name: AssignProductToCategory :exec
+INSERT INTO product_categories (product_id, category_id)
+VALUES ($1, $2)
+ON CONFLICT (product_id, category_id) DO NOTHING
+`
+
+type AssignProductToCategoryParams struct {
+	ProductID  string `json:"productId"`
+	CategoryID int32  `json:"categoryId"`
+}
+
+func (q *Queries) AssignProductToCategory(ctx context.Context, arg AssignProductToCategoryParams) error {
+	_, err := q.db.Exec(ctx, assignProductToCategory, arg.ProductID, arg.CategoryID)
+	return err
+}
+
+const createCategory = `-- name: CreateCategory :exec
+INSERT INTO categories (name, description, parent_id, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5)
 `
 
 type CreateCategoryParams struct {
-	Name        string  `json:"name"`
-	Description *string `json:"description"`
-	ParentID    *int32  `json:"parentId"`
+	Name        string             `json:"name"`
+	Description *string            `json:"description"`
+	ParentID    *int32             `json:"parentId"`
+	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt   pgtype.Timestamptz `json:"updatedAt"`
 }
 
-func (q *Queries) CreateCategory(ctx context.Context, arg CreateCategoryParams) (*Category, error) {
-	row := q.db.QueryRow(ctx, createCategory, arg.Name, arg.Description, arg.ParentID)
-	var i Category
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Description,
-		&i.ParentID,
-		&i.CreatedAt,
-		&i.UpdatedAt,
+func (q *Queries) CreateCategory(ctx context.Context, arg CreateCategoryParams) error {
+	_, err := q.db.Exec(ctx, createCategory,
+		arg.Name,
+		arg.Description,
+		arg.ParentID,
+		arg.CreatedAt,
+		arg.UpdatedAt,
 	)
-	return &i, err
+	return err
 }
 
 const deleteCategory = `-- name: DeleteCategory :exec
 DELETE FROM categories WHERE id = $1
 `
 
-func (q *Queries) DeleteCategory(ctx context.Context, id uint32) error {
+func (q *Queries) DeleteCategory(ctx context.Context, id int32) error {
 	_, err := q.db.Exec(ctx, deleteCategory, id)
 	return err
 }
 
-const getCategory = `-- name: GetCategory :one
+const getCategoryByID = `-- name: GetCategoryByID :one
 SELECT id, name, description, parent_id, created_at, updated_at
 FROM categories
-WHERE id = $1 LIMIT 1
+WHERE id = $1
 `
 
-func (q *Queries) GetCategory(ctx context.Context, id uint32) (*Category, error) {
-	row := q.db.QueryRow(ctx, getCategory, id)
+func (q *Queries) GetCategoryByID(ctx context.Context, id int32) (*Category, error) {
+	row := q.db.QueryRow(ctx, getCategoryByID, id)
 	var i Category
 	err := row.Scan(
 		&i.ID,
@@ -67,7 +83,7 @@ func (q *Queries) GetCategory(ctx context.Context, id uint32) (*Category, error)
 const listCategories = `-- name: ListCategories :many
 SELECT id, name, description, parent_id, created_at, updated_at
 FROM categories
-ORDER BY name
+ORDER BY created_at DESC
 LIMIT $1 OFFSET $2
 `
 
@@ -103,35 +119,76 @@ func (q *Queries) ListCategories(ctx context.Context, arg ListCategoriesParams) 
 	return items, nil
 }
 
-const updateCategory = `-- name: UpdateCategory :one
+const listSubcategories = `-- name: ListSubcategories :many
+SELECT id, name, description, parent_id, created_at, updated_at
+FROM categories
+WHERE parent_id = $1
+ORDER BY created_at DESC
+`
+
+func (q *Queries) ListSubcategories(ctx context.Context, parentID *int32) ([]*Category, error) {
+	rows, err := q.db.Query(ctx, listSubcategories, parentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []*Category{}
+	for rows.Next() {
+		var i Category
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.ParentID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const removeProductFromCategory = `-- name: RemoveProductFromCategory :exec
+DELETE FROM product_categories
+WHERE product_id = $1 AND category_id = $2
+`
+
+type RemoveProductFromCategoryParams struct {
+	ProductID  string `json:"productId"`
+	CategoryID int32  `json:"categoryId"`
+}
+
+func (q *Queries) RemoveProductFromCategory(ctx context.Context, arg RemoveProductFromCategoryParams) error {
+	_, err := q.db.Exec(ctx, removeProductFromCategory, arg.ProductID, arg.CategoryID)
+	return err
+}
+
+const updateCategory = `-- name: UpdateCategory :exec
 UPDATE categories
 SET name = $2, description = $3, parent_id = $4, updated_at = NOW()
-WHERE id = $1
-RETURNING id, name, description, parent_id, created_at, updated_at
+WHERE id = $1 AND updated_at = $5
 `
 
 type UpdateCategoryParams struct {
-	ID          uint32  `json:"id"`
-	Name        string  `json:"name"`
-	Description *string `json:"description"`
-	ParentID    *int32  `json:"parentId"`
+	ID          int32              `json:"id"`
+	Name        string             `json:"name"`
+	Description *string            `json:"description"`
+	ParentID    *int32             `json:"parentId"`
+	UpdatedAt   pgtype.Timestamptz `json:"updatedAt"`
 }
 
-func (q *Queries) UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (*Category, error) {
-	row := q.db.QueryRow(ctx, updateCategory,
+func (q *Queries) UpdateCategory(ctx context.Context, arg UpdateCategoryParams) error {
+	_, err := q.db.Exec(ctx, updateCategory,
 		arg.ID,
 		arg.Name,
 		arg.Description,
 		arg.ParentID,
+		arg.UpdatedAt,
 	)
-	var i Category
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Description,
-		&i.ParentID,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return &i, err
+	return err
 }

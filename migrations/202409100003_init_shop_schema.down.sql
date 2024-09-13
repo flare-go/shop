@@ -29,15 +29,15 @@ DROP INDEX IF EXISTS idx_stock_movements_reference;
 -- 刪除表格
 DROP TABLE IF EXISTS product_categories;
 DROP TABLE IF EXISTS categories;
+DROP TABLE IF EXISTS order_items;
+DROP TABLE IF EXISTS orders;
 DROP TABLE IF EXISTS cart_items;
 DROP TABLE IF EXISTS carts;
-DROP TABLE IF EXISTS orders;
-DROP TABLE IF EXISTS order_items;
-DROP TABLE IF EXISTS stocks;
-DROP TABLE IF EXISTS stock_movem;
+DROP TABLE IF EXISTS stock_movements CASCADE ;
+DROP TABLE IF EXISTS stocks CASCADE;
 
 
 DROP TYPE IF EXISTS cart_status;
 DROP TYPE IF EXISTS order_status;
-DROP TYPE IF EXISTS stock_movement_type;
 DROP TYPE IF EXISTS stock_movement_reference_type;
+DROP TYPE IF EXISTS stock_movement_type;

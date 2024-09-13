@@ -64,6 +64,852 @@ func (e CartStatus) Valid() bool {
 	return false
 }
 
+type Currency string
+
+const (
+	CurrencyAed Currency = "aed"
+	CurrencyAfn Currency = "afn"
+	CurrencyAll Currency = "all"
+	CurrencyAmd Currency = "amd"
+	CurrencyAng Currency = "ang"
+	CurrencyAoa Currency = "aoa"
+	CurrencyArs Currency = "ars"
+	CurrencyAud Currency = "aud"
+	CurrencyAwg Currency = "awg"
+	CurrencyAzn Currency = "azn"
+	CurrencyBam Currency = "bam"
+	CurrencyBbd Currency = "bbd"
+	CurrencyBdt Currency = "bdt"
+	CurrencyBgn Currency = "bgn"
+	CurrencyBif Currency = "bif"
+	CurrencyBmd Currency = "bmd"
+	CurrencyBnd Currency = "bnd"
+	CurrencyBob Currency = "bob"
+	CurrencyBrl Currency = "brl"
+	CurrencyBsd Currency = "bsd"
+	CurrencyBwp Currency = "bwp"
+	CurrencyBzd Currency = "bzd"
+	CurrencyCad Currency = "cad"
+	CurrencyCdf Currency = "cdf"
+	CurrencyChf Currency = "chf"
+	CurrencyClp Currency = "clp"
+	CurrencyCny Currency = "cny"
+	CurrencyCop Currency = "cop"
+	CurrencyCrc Currency = "crc"
+	CurrencyCve Currency = "cve"
+	CurrencyCzk Currency = "czk"
+	CurrencyDjf Currency = "djf"
+	CurrencyDkk Currency = "dkk"
+	CurrencyDop Currency = "dop"
+	CurrencyDzd Currency = "dzd"
+	CurrencyEek Currency = "eek"
+	CurrencyEgp Currency = "egp"
+	CurrencyEtb Currency = "etb"
+	CurrencyEur Currency = "eur"
+	CurrencyFjd Currency = "fjd"
+	CurrencyFkp Currency = "fkp"
+	CurrencyGbp Currency = "gbp"
+	CurrencyGel Currency = "gel"
+	CurrencyGip Currency = "gip"
+	CurrencyGmd Currency = "gmd"
+	CurrencyGnf Currency = "gnf"
+	CurrencyGtq Currency = "gtq"
+	CurrencyGyd Currency = "gyd"
+	CurrencyHkd Currency = "hkd"
+	CurrencyHnl Currency = "hnl"
+	CurrencyHrk Currency = "hrk"
+	CurrencyHtg Currency = "htg"
+	CurrencyHuf Currency = "huf"
+	CurrencyIdr Currency = "idr"
+	CurrencyIls Currency = "ils"
+	CurrencyInr Currency = "inr"
+	CurrencyIsk Currency = "isk"
+	CurrencyJmd Currency = "jmd"
+	CurrencyJpy Currency = "jpy"
+	CurrencyKes Currency = "kes"
+	CurrencyKgs Currency = "kgs"
+	CurrencyKhr Currency = "khr"
+	CurrencyKmf Currency = "kmf"
+	CurrencyKrw Currency = "krw"
+	CurrencyKyd Currency = "kyd"
+	CurrencyKzt Currency = "kzt"
+	CurrencyLak Currency = "lak"
+	CurrencyLbp Currency = "lbp"
+	CurrencyLkr Currency = "lkr"
+	CurrencyLrd Currency = "lrd"
+	CurrencyLsl Currency = "lsl"
+	CurrencyLtl Currency = "ltl"
+	CurrencyLvl Currency = "lvl"
+	CurrencyMad Currency = "mad"
+	CurrencyMdl Currency = "mdl"
+	CurrencyMga Currency = "mga"
+	CurrencyMkd Currency = "mkd"
+	CurrencyMnt Currency = "mnt"
+	CurrencyMop Currency = "mop"
+	CurrencyMro Currency = "mro"
+	CurrencyMur Currency = "mur"
+	CurrencyMvr Currency = "mvr"
+	CurrencyMwk Currency = "mwk"
+	CurrencyMxn Currency = "mxn"
+	CurrencyMyr Currency = "myr"
+	CurrencyMzn Currency = "mzn"
+	CurrencyNad Currency = "nad"
+	CurrencyNgn Currency = "ngn"
+	CurrencyNio Currency = "nio"
+	CurrencyNok Currency = "nok"
+	CurrencyNpr Currency = "npr"
+	CurrencyNzd Currency = "nzd"
+	CurrencyPab Currency = "pab"
+	CurrencyPen Currency = "pen"
+	CurrencyPgk Currency = "pgk"
+	CurrencyPhp Currency = "php"
+	CurrencyPkr Currency = "pkr"
+	CurrencyPln Currency = "pln"
+	CurrencyPyg Currency = "pyg"
+	CurrencyQar Currency = "qar"
+	CurrencyRon Currency = "ron"
+	CurrencyRsd Currency = "rsd"
+	CurrencyRub Currency = "rub"
+	CurrencyRwf Currency = "rwf"
+	CurrencySar Currency = "sar"
+	CurrencySbd Currency = "sbd"
+	CurrencyScr Currency = "scr"
+	CurrencySek Currency = "sek"
+	CurrencySgd Currency = "sgd"
+	CurrencyShp Currency = "shp"
+	CurrencySll Currency = "sll"
+	CurrencySos Currency = "sos"
+	CurrencySrd Currency = "srd"
+	CurrencyStd Currency = "std"
+	CurrencySvc Currency = "svc"
+	CurrencySzl Currency = "szl"
+	CurrencyThb Currency = "thb"
+	CurrencyTjs Currency = "tjs"
+	CurrencyTop Currency = "top"
+	CurrencyTry Currency = "try"
+	CurrencyTtd Currency = "ttd"
+	CurrencyTwd Currency = "twd"
+	CurrencyTzs Currency = "tzs"
+	CurrencyUah Currency = "uah"
+	CurrencyUgx Currency = "ugx"
+	CurrencyUsd Currency = "usd"
+	CurrencyUyu Currency = "uyu"
+	CurrencyUzs Currency = "uzs"
+	CurrencyVef Currency = "vef"
+	CurrencyVnd Currency = "vnd"
+	CurrencyVuv Currency = "vuv"
+	CurrencyWst Currency = "wst"
+	CurrencyXaf Currency = "xaf"
+	CurrencyXcd Currency = "xcd"
+	CurrencyXof Currency = "xof"
+	CurrencyXpf Currency = "xpf"
+	CurrencyYer Currency = "yer"
+	CurrencyZar Currency = "zar"
+	CurrencyZmw Currency = "zmw"
+)
+
+func (e *Currency) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = Currency(s)
+	case string:
+		*e = Currency(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Currency: %T", src)
+	}
+	return nil
+}
+
+type NullCurrency struct {
+	Currency Currency `json:"currency"`
+	Valid    bool     `json:"valid"` // Valid is true if Currency is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullCurrency) Scan(value interface{}) error {
+	if value == nil {
+		ns.Currency, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.Currency.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullCurrency) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.Currency), nil
+}
+
+func (e Currency) Valid() bool {
+	switch e {
+	case CurrencyAed,
+		CurrencyAfn,
+		CurrencyAll,
+		CurrencyAmd,
+		CurrencyAng,
+		CurrencyAoa,
+		CurrencyArs,
+		CurrencyAud,
+		CurrencyAwg,
+		CurrencyAzn,
+		CurrencyBam,
+		CurrencyBbd,
+		CurrencyBdt,
+		CurrencyBgn,
+		CurrencyBif,
+		CurrencyBmd,
+		CurrencyBnd,
+		CurrencyBob,
+		CurrencyBrl,
+		CurrencyBsd,
+		CurrencyBwp,
+		CurrencyBzd,
+		CurrencyCad,
+		CurrencyCdf,
+		CurrencyChf,
+		CurrencyClp,
+		CurrencyCny,
+		CurrencyCop,
+		CurrencyCrc,
+		CurrencyCve,
+		CurrencyCzk,
+		CurrencyDjf,
+		CurrencyDkk,
+		CurrencyDop,
+		CurrencyDzd,
+		CurrencyEek,
+		CurrencyEgp,
+		CurrencyEtb,
+		CurrencyEur,
+		CurrencyFjd,
+		CurrencyFkp,
+		CurrencyGbp,
+		CurrencyGel,
+		CurrencyGip,
+		CurrencyGmd,
+		CurrencyGnf,
+		CurrencyGtq,
+		CurrencyGyd,
+		CurrencyHkd,
+		CurrencyHnl,
+		CurrencyHrk,
+		CurrencyHtg,
+		CurrencyHuf,
+		CurrencyIdr,
+		CurrencyIls,
+		CurrencyInr,
+		CurrencyIsk,
+		CurrencyJmd,
+		CurrencyJpy,
+		CurrencyKes,
+		CurrencyKgs,
+		CurrencyKhr,
+		CurrencyKmf,
+		CurrencyKrw,
+		CurrencyKyd,
+		CurrencyKzt,
+		CurrencyLak,
+		CurrencyLbp,
+		CurrencyLkr,
+		CurrencyLrd,
+		CurrencyLsl,
+		CurrencyLtl,
+		CurrencyLvl,
+		CurrencyMad,
+		CurrencyMdl,
+		CurrencyMga,
+		CurrencyMkd,
+		CurrencyMnt,
+		CurrencyMop,
+		CurrencyMro,
+		CurrencyMur,
+		CurrencyMvr,
+		CurrencyMwk,
+		CurrencyMxn,
+		CurrencyMyr,
+		CurrencyMzn,
+		CurrencyNad,
+		CurrencyNgn,
+		CurrencyNio,
+		CurrencyNok,
+		CurrencyNpr,
+		CurrencyNzd,
+		CurrencyPab,
+		CurrencyPen,
+		CurrencyPgk,
+		CurrencyPhp,
+		CurrencyPkr,
+		CurrencyPln,
+		CurrencyPyg,
+		CurrencyQar,
+		CurrencyRon,
+		CurrencyRsd,
+		CurrencyRub,
+		CurrencyRwf,
+		CurrencySar,
+		CurrencySbd,
+		CurrencyScr,
+		CurrencySek,
+		CurrencySgd,
+		CurrencyShp,
+		CurrencySll,
+		CurrencySos,
+		CurrencySrd,
+		CurrencyStd,
+		CurrencySvc,
+		CurrencySzl,
+		CurrencyThb,
+		CurrencyTjs,
+		CurrencyTop,
+		CurrencyTry,
+		CurrencyTtd,
+		CurrencyTwd,
+		CurrencyTzs,
+		CurrencyUah,
+		CurrencyUgx,
+		CurrencyUsd,
+		CurrencyUyu,
+		CurrencyUzs,
+		CurrencyVef,
+		CurrencyVnd,
+		CurrencyVuv,
+		CurrencyWst,
+		CurrencyXaf,
+		CurrencyXcd,
+		CurrencyXof,
+		CurrencyXpf,
+		CurrencyYer,
+		CurrencyZar,
+		CurrencyZmw:
+		return true
+	}
+	return false
+}
+
+type EventType string
+
+const (
+	EventTypeAccountapplicationauthorized                       EventType = "account.application.authorized"
+	EventTypeAccountapplicationdeauthorized                     EventType = "account.application.deauthorized"
+	EventTypeAccountexternalAccountcreated                      EventType = "account.external_account.created"
+	EventTypeAccountexternalAccountdeleted                      EventType = "account.external_account.deleted"
+	EventTypeAccountexternalAccountupdated                      EventType = "account.external_account.updated"
+	EventTypeAccountupdated                                     EventType = "account.updated"
+	EventTypeApplicationFeecreated                              EventType = "application_fee.created"
+	EventTypeApplicationFeerefundupdated                        EventType = "application_fee.refund.updated"
+	EventTypeApplicationFeerefunded                             EventType = "application_fee.refunded"
+	EventTypeBalanceavailable                                   EventType = "balance.available"
+	EventTypeBillingalerttriggered                              EventType = "billing.alert.triggered"
+	EventTypeBillingPortalconfigurationcreated                  EventType = "billing_portal.configuration.created"
+	EventTypeBillingPortalconfigurationupdated                  EventType = "billing_portal.configuration.updated"
+	EventTypeBillingPortalsessioncreated                        EventType = "billing_portal.session.created"
+	EventTypeCapabilityupdated                                  EventType = "capability.updated"
+	EventTypeCashBalancefundsAvailable                          EventType = "cash_balance.funds_available"
+	EventTypeChargecaptured                                     EventType = "charge.captured"
+	EventTypeChargedisputeclosed                                EventType = "charge.dispute.closed"
+	EventTypeChargedisputecreated                               EventType = "charge.dispute.created"
+	EventTypeChargedisputefundsReinstated                       EventType = "charge.dispute.funds_reinstated"
+	EventTypeChargedisputefundsWithdrawn                        EventType = "charge.dispute.funds_withdrawn"
+	EventTypeChargedisputeupdated                               EventType = "charge.dispute.updated"
+	EventTypeChargeexpired                                      EventType = "charge.expired"
+	EventTypeChargefailed                                       EventType = "charge.failed"
+	EventTypeChargepending                                      EventType = "charge.pending"
+	EventTypeChargerefundupdated                                EventType = "charge.refund.updated"
+	EventTypeChargerefunded                                     EventType = "charge.refunded"
+	EventTypeChargesucceeded                                    EventType = "charge.succeeded"
+	EventTypeChargeupdated                                      EventType = "charge.updated"
+	EventTypeCheckoutsessionasyncPaymentFailed                  EventType = "checkout.session.async_payment_failed"
+	EventTypeCheckoutsessionasyncPaymentSucceeded               EventType = "checkout.session.async_payment_succeeded"
+	EventTypeCheckoutsessioncompleted                           EventType = "checkout.session.completed"
+	EventTypeCheckoutsessionexpired                             EventType = "checkout.session.expired"
+	EventTypeClimateordercanceled                               EventType = "climate.order.canceled"
+	EventTypeClimateordercreated                                EventType = "climate.order.created"
+	EventTypeClimateorderdelayed                                EventType = "climate.order.delayed"
+	EventTypeClimateorderdelivered                              EventType = "climate.order.delivered"
+	EventTypeClimateorderproductSubstituted                     EventType = "climate.order.product_substituted"
+	EventTypeClimateproductcreated                              EventType = "climate.product.created"
+	EventTypeClimateproductpricingUpdated                       EventType = "climate.product.pricing_updated"
+	EventTypeCouponcreated                                      EventType = "coupon.created"
+	EventTypeCoupondeleted                                      EventType = "coupon.deleted"
+	EventTypeCouponupdated                                      EventType = "coupon.updated"
+	EventTypeCreditNotecreated                                  EventType = "credit_note.created"
+	EventTypeCreditNoteupdated                                  EventType = "credit_note.updated"
+	EventTypeCreditNotevoided                                   EventType = "credit_note.voided"
+	EventTypeCustomercreated                                    EventType = "customer.created"
+	EventTypeCustomerdeleted                                    EventType = "customer.deleted"
+	EventTypeCustomerdiscountcreated                            EventType = "customer.discount.created"
+	EventTypeCustomerdiscountdeleted                            EventType = "customer.discount.deleted"
+	EventTypeCustomerdiscountupdated                            EventType = "customer.discount.updated"
+	EventTypeCustomersourcecreated                              EventType = "customer.source.created"
+	EventTypeCustomersourcedeleted                              EventType = "customer.source.deleted"
+	EventTypeCustomersourceexpiring                             EventType = "customer.source.expiring"
+	EventTypeCustomersourceupdated                              EventType = "customer.source.updated"
+	EventTypeCustomersubscriptioncreated                        EventType = "customer.subscription.created"
+	EventTypeCustomersubscriptiondeleted                        EventType = "customer.subscription.deleted"
+	EventTypeCustomersubscriptionpaused                         EventType = "customer.subscription.paused"
+	EventTypeCustomersubscriptionpendingUpdateApplied           EventType = "customer.subscription.pending_update_applied"
+	EventTypeCustomersubscriptionpendingUpdateExpired           EventType = "customer.subscription.pending_update_expired"
+	EventTypeCustomersubscriptionresumed                        EventType = "customer.subscription.resumed"
+	EventTypeCustomersubscriptiontrialWillEnd                   EventType = "customer.subscription.trial_will_end"
+	EventTypeCustomersubscriptionupdated                        EventType = "customer.subscription.updated"
+	EventTypeCustomertaxIdcreated                               EventType = "customer.tax_id.created"
+	EventTypeCustomertaxIddeleted                               EventType = "customer.tax_id.deleted"
+	EventTypeCustomertaxIdupdated                               EventType = "customer.tax_id.updated"
+	EventTypeCustomerupdated                                    EventType = "customer.updated"
+	EventTypeCustomerCashBalanceTransactioncreated              EventType = "customer_cash_balance_transaction.created"
+	EventTypeEntitlementsactiveEntitlementSummaryupdated        EventType = "entitlements.active_entitlement_summary.updated"
+	EventTypeFilecreated                                        EventType = "file.created"
+	EventTypeFinancialConnectionsaccountcreated                 EventType = "financial_connections.account.created"
+	EventTypeFinancialConnectionsaccountdeactivated             EventType = "financial_connections.account.deactivated"
+	EventTypeFinancialConnectionsaccountdisconnected            EventType = "financial_connections.account.disconnected"
+	EventTypeFinancialConnectionsaccountreactivated             EventType = "financial_connections.account.reactivated"
+	EventTypeFinancialConnectionsaccountrefreshedBalance        EventType = "financial_connections.account.refreshed_balance"
+	EventTypeFinancialConnectionsaccountrefreshedOwnership      EventType = "financial_connections.account.refreshed_ownership"
+	EventTypeFinancialConnectionsaccountrefreshedTransactions   EventType = "financial_connections.account.refreshed_transactions"
+	EventTypeIdentityverificationSessioncanceled                EventType = "identity.verification_session.canceled"
+	EventTypeIdentityverificationSessioncreated                 EventType = "identity.verification_session.created"
+	EventTypeIdentityverificationSessionprocessing              EventType = "identity.verification_session.processing"
+	EventTypeIdentityverificationSessionredacted                EventType = "identity.verification_session.redacted"
+	EventTypeIdentityverificationSessionrequiresInput           EventType = "identity.verification_session.requires_input"
+	EventTypeIdentityverificationSessionverified                EventType = "identity.verification_session.verified"
+	EventTypeInvoicecreated                                     EventType = "invoice.created"
+	EventTypeInvoicedeleted                                     EventType = "invoice.deleted"
+	EventTypeInvoicefinalizationFailed                          EventType = "invoice.finalization_failed"
+	EventTypeInvoicefinalized                                   EventType = "invoice.finalized"
+	EventTypeInvoicemarkedUncollectible                         EventType = "invoice.marked_uncollectible"
+	EventTypeInvoiceoverdue                                     EventType = "invoice.overdue"
+	EventTypeInvoicepaid                                        EventType = "invoice.paid"
+	EventTypeInvoicepaymentActionRequired                       EventType = "invoice.payment_action_required"
+	EventTypeInvoicepaymentFailed                               EventType = "invoice.payment_failed"
+	EventTypeInvoicepaymentSucceeded                            EventType = "invoice.payment_succeeded"
+	EventTypeInvoicesent                                        EventType = "invoice.sent"
+	EventTypeInvoiceupcoming                                    EventType = "invoice.upcoming"
+	EventTypeInvoiceupdated                                     EventType = "invoice.updated"
+	EventTypeInvoicevoided                                      EventType = "invoice.voided"
+	EventTypeInvoicewillBeDue                                   EventType = "invoice.will_be_due"
+	EventTypeInvoiceitemcreated                                 EventType = "invoiceitem.created"
+	EventTypeInvoiceitemdeleted                                 EventType = "invoiceitem.deleted"
+	EventTypeIssuingAuthorizationcreated                        EventType = "issuing_authorization.created"
+	EventTypeIssuingAuthorizationrequest                        EventType = "issuing_authorization.request"
+	EventTypeIssuingAuthorizationupdated                        EventType = "issuing_authorization.updated"
+	EventTypeIssuingCardcreated                                 EventType = "issuing_card.created"
+	EventTypeIssuingCardupdated                                 EventType = "issuing_card.updated"
+	EventTypeIssuingCardholdercreated                           EventType = "issuing_cardholder.created"
+	EventTypeIssuingCardholderupdated                           EventType = "issuing_cardholder.updated"
+	EventTypeIssuingDisputeclosed                               EventType = "issuing_dispute.closed"
+	EventTypeIssuingDisputecreated                              EventType = "issuing_dispute.created"
+	EventTypeIssuingDisputefundsReinstated                      EventType = "issuing_dispute.funds_reinstated"
+	EventTypeIssuingDisputefundsRescinded                       EventType = "issuing_dispute.funds_rescinded"
+	EventTypeIssuingDisputesubmitted                            EventType = "issuing_dispute.submitted"
+	EventTypeIssuingDisputeupdated                              EventType = "issuing_dispute.updated"
+	EventTypeIssuingPersonalizationDesignactivated              EventType = "issuing_personalization_design.activated"
+	EventTypeIssuingPersonalizationDesigndeactivated            EventType = "issuing_personalization_design.deactivated"
+	EventTypeIssuingPersonalizationDesignrejected               EventType = "issuing_personalization_design.rejected"
+	EventTypeIssuingPersonalizationDesignupdated                EventType = "issuing_personalization_design.updated"
+	EventTypeIssuingTokencreated                                EventType = "issuing_token.created"
+	EventTypeIssuingTokenupdated                                EventType = "issuing_token.updated"
+	EventTypeIssuingTransactioncreated                          EventType = "issuing_transaction.created"
+	EventTypeIssuingTransactionupdated                          EventType = "issuing_transaction.updated"
+	EventTypeMandateupdated                                     EventType = "mandate.updated"
+	EventTypePaymentIntentamountCapturableUpdated               EventType = "payment_intent.amount_capturable_updated"
+	EventTypePaymentIntentcanceled                              EventType = "payment_intent.canceled"
+	EventTypePaymentIntentcreated                               EventType = "payment_intent.created"
+	EventTypePaymentIntentpartiallyFunded                       EventType = "payment_intent.partially_funded"
+	EventTypePaymentIntentpaymentFailed                         EventType = "payment_intent.payment_failed"
+	EventTypePaymentIntentprocessing                            EventType = "payment_intent.processing"
+	EventTypePaymentIntentrequiresAction                        EventType = "payment_intent.requires_action"
+	EventTypePaymentIntentsucceeded                             EventType = "payment_intent.succeeded"
+	EventTypePaymentLinkcreated                                 EventType = "payment_link.created"
+	EventTypePaymentLinkupdated                                 EventType = "payment_link.updated"
+	EventTypePaymentMethodattached                              EventType = "payment_method.attached"
+	EventTypePaymentMethodautomaticallyUpdated                  EventType = "payment_method.automatically_updated"
+	EventTypePaymentMethoddetached                              EventType = "payment_method.detached"
+	EventTypePaymentMethodupdated                               EventType = "payment_method.updated"
+	EventTypePayoutcanceled                                     EventType = "payout.canceled"
+	EventTypePayoutcreated                                      EventType = "payout.created"
+	EventTypePayoutfailed                                       EventType = "payout.failed"
+	EventTypePayoutpaid                                         EventType = "payout.paid"
+	EventTypePayoutreconciliationCompleted                      EventType = "payout.reconciliation_completed"
+	EventTypePayoutupdated                                      EventType = "payout.updated"
+	EventTypePersoncreated                                      EventType = "person.created"
+	EventTypePersondeleted                                      EventType = "person.deleted"
+	EventTypePersonupdated                                      EventType = "person.updated"
+	EventTypePlancreated                                        EventType = "plan.created"
+	EventTypePlandeleted                                        EventType = "plan.deleted"
+	EventTypePlanupdated                                        EventType = "plan.updated"
+	EventTypePricecreated                                       EventType = "price.created"
+	EventTypePricedeleted                                       EventType = "price.deleted"
+	EventTypePriceupdated                                       EventType = "price.updated"
+	EventTypeProductcreated                                     EventType = "product.created"
+	EventTypeProductdeleted                                     EventType = "product.deleted"
+	EventTypeProductupdated                                     EventType = "product.updated"
+	EventTypePromotionCodecreated                               EventType = "promotion_code.created"
+	EventTypePromotionCodeupdated                               EventType = "promotion_code.updated"
+	EventTypeQuoteaccepted                                      EventType = "quote.accepted"
+	EventTypeQuotecanceled                                      EventType = "quote.canceled"
+	EventTypeQuotecreated                                       EventType = "quote.created"
+	EventTypeQuotefinalized                                     EventType = "quote.finalized"
+	EventTypeRadarearlyFraudWarningcreated                      EventType = "radar.early_fraud_warning.created"
+	EventTypeRadarearlyFraudWarningupdated                      EventType = "radar.early_fraud_warning.updated"
+	EventTypeRefundcreated                                      EventType = "refund.created"
+	EventTypeRefundupdated                                      EventType = "refund.updated"
+	EventTypeReportingreportRunfailed                           EventType = "reporting.report_run.failed"
+	EventTypeReportingreportRunsucceeded                        EventType = "reporting.report_run.succeeded"
+	EventTypeReportingreportTypeupdated                         EventType = "reporting.report_type.updated"
+	EventTypeReviewclosed                                       EventType = "review.closed"
+	EventTypeReviewopened                                       EventType = "review.opened"
+	EventTypeSetupIntentcanceled                                EventType = "setup_intent.canceled"
+	EventTypeSetupIntentcreated                                 EventType = "setup_intent.created"
+	EventTypeSetupIntentrequiresAction                          EventType = "setup_intent.requires_action"
+	EventTypeSetupIntentsetupFailed                             EventType = "setup_intent.setup_failed"
+	EventTypeSetupIntentsucceeded                               EventType = "setup_intent.succeeded"
+	EventTypeSigmascheduledQueryRuncreated                      EventType = "sigma.scheduled_query_run.created"
+	EventTypeSourcecanceled                                     EventType = "source.canceled"
+	EventTypeSourcechargeable                                   EventType = "source.chargeable"
+	EventTypeSourcefailed                                       EventType = "source.failed"
+	EventTypeSourcemandateNotification                          EventType = "source.mandate_notification"
+	EventTypeSourcerefundAttributesRequired                     EventType = "source.refund_attributes_required"
+	EventTypeSourcetransactioncreated                           EventType = "source.transaction.created"
+	EventTypeSourcetransactionupdated                           EventType = "source.transaction.updated"
+	EventTypeSubscriptionScheduleaborted                        EventType = "subscription_schedule.aborted"
+	EventTypeSubscriptionSchedulecanceled                       EventType = "subscription_schedule.canceled"
+	EventTypeSubscriptionSchedulecompleted                      EventType = "subscription_schedule.completed"
+	EventTypeSubscriptionSchedulecreated                        EventType = "subscription_schedule.created"
+	EventTypeSubscriptionScheduleexpiring                       EventType = "subscription_schedule.expiring"
+	EventTypeSubscriptionSchedulereleased                       EventType = "subscription_schedule.released"
+	EventTypeSubscriptionScheduleupdated                        EventType = "subscription_schedule.updated"
+	EventTypeTaxsettingsupdated                                 EventType = "tax.settings.updated"
+	EventTypeTaxRatecreated                                     EventType = "tax_rate.created"
+	EventTypeTaxRateupdated                                     EventType = "tax_rate.updated"
+	EventTypeTerminalreaderactionFailed                         EventType = "terminal.reader.action_failed"
+	EventTypeTerminalreaderactionSucceeded                      EventType = "terminal.reader.action_succeeded"
+	EventTypeTestHelperstestClockadvancing                      EventType = "test_helpers.test_clock.advancing"
+	EventTypeTestHelperstestClockcreated                        EventType = "test_helpers.test_clock.created"
+	EventTypeTestHelperstestClockdeleted                        EventType = "test_helpers.test_clock.deleted"
+	EventTypeTestHelperstestClockinternalFailure                EventType = "test_helpers.test_clock.internal_failure"
+	EventTypeTestHelperstestClockready                          EventType = "test_helpers.test_clock.ready"
+	EventTypeTopupcanceled                                      EventType = "topup.canceled"
+	EventTypeTopupcreated                                       EventType = "topup.created"
+	EventTypeTopupfailed                                        EventType = "topup.failed"
+	EventTypeTopupreversed                                      EventType = "topup.reversed"
+	EventTypeTopupsucceeded                                     EventType = "topup.succeeded"
+	EventTypeTransfercreated                                    EventType = "transfer.created"
+	EventTypeTransferreversed                                   EventType = "transfer.reversed"
+	EventTypeTransferupdated                                    EventType = "transfer.updated"
+	EventTypeTreasurycreditReversalcreated                      EventType = "treasury.credit_reversal.created"
+	EventTypeTreasurycreditReversalposted                       EventType = "treasury.credit_reversal.posted"
+	EventTypeTreasurydebitReversalcompleted                     EventType = "treasury.debit_reversal.completed"
+	EventTypeTreasurydebitReversalcreated                       EventType = "treasury.debit_reversal.created"
+	EventTypeTreasurydebitReversalinitialCreditGranted          EventType = "treasury.debit_reversal.initial_credit_granted"
+	EventTypeTreasuryfinancialAccountclosed                     EventType = "treasury.financial_account.closed"
+	EventTypeTreasuryfinancialAccountcreated                    EventType = "treasury.financial_account.created"
+	EventTypeTreasuryfinancialAccountfeaturesStatusUpdated      EventType = "treasury.financial_account.features_status_updated"
+	EventTypeTreasuryinboundTransfercanceled                    EventType = "treasury.inbound_transfer.canceled"
+	EventTypeTreasuryinboundTransfercreated                     EventType = "treasury.inbound_transfer.created"
+	EventTypeTreasuryinboundTransferfailed                      EventType = "treasury.inbound_transfer.failed"
+	EventTypeTreasuryinboundTransfersucceeded                   EventType = "treasury.inbound_transfer.succeeded"
+	EventTypeTreasuryoutboundPaymentcanceled                    EventType = "treasury.outbound_payment.canceled"
+	EventTypeTreasuryoutboundPaymentcreated                     EventType = "treasury.outbound_payment.created"
+	EventTypeTreasuryoutboundPaymentexpectedArrivalDateUpdated  EventType = "treasury.outbound_payment.expected_arrival_date_updated"
+	EventTypeTreasuryoutboundPaymentfailed                      EventType = "treasury.outbound_payment.failed"
+	EventTypeTreasuryoutboundPaymentposted                      EventType = "treasury.outbound_payment.posted"
+	EventTypeTreasuryoutboundPaymentreturned                    EventType = "treasury.outbound_payment.returned"
+	EventTypeTreasuryoutboundPaymenttrackingDetailsUpdated      EventType = "treasury.outbound_payment.tracking_details_updated"
+	EventTypeTreasuryoutboundTransfercanceled                   EventType = "treasury.outbound_transfer.canceled"
+	EventTypeTreasuryoutboundTransfercreated                    EventType = "treasury.outbound_transfer.created"
+	EventTypeTreasuryoutboundTransferexpectedArrivalDateUpdated EventType = "treasury.outbound_transfer.expected_arrival_date_updated"
+	EventTypeTreasuryoutboundTransferfailed                     EventType = "treasury.outbound_transfer.failed"
+	EventTypeTreasuryoutboundTransferposted                     EventType = "treasury.outbound_transfer.posted"
+	EventTypeTreasuryoutboundTransferreturned                   EventType = "treasury.outbound_transfer.returned"
+	EventTypeTreasuryoutboundTransfertrackingDetailsUpdated     EventType = "treasury.outbound_transfer.tracking_details_updated"
+	EventTypeTreasuryreceivedCreditcreated                      EventType = "treasury.received_credit.created"
+	EventTypeTreasuryreceivedCreditfailed                       EventType = "treasury.received_credit.failed"
+	EventTypeTreasuryreceivedCreditsucceeded                    EventType = "treasury.received_credit.succeeded"
+	EventTypeTreasuryreceivedDebitcreated                       EventType = "treasury.received_debit.created"
+)
+
+func (e *EventType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = EventType(s)
+	case string:
+		*e = EventType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for EventType: %T", src)
+	}
+	return nil
+}
+
+type NullEventType struct {
+	EventType EventType `json:"eventType"`
+	Valid     bool      `json:"valid"` // Valid is true if EventType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullEventType) Scan(value interface{}) error {
+	if value == nil {
+		ns.EventType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.EventType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullEventType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.EventType), nil
+}
+
+func (e EventType) Valid() bool {
+	switch e {
+	case EventTypeAccountapplicationauthorized,
+		EventTypeAccountapplicationdeauthorized,
+		EventTypeAccountexternalAccountcreated,
+		EventTypeAccountexternalAccountdeleted,
+		EventTypeAccountexternalAccountupdated,
+		EventTypeAccountupdated,
+		EventTypeApplicationFeecreated,
+		EventTypeApplicationFeerefundupdated,
+		EventTypeApplicationFeerefunded,
+		EventTypeBalanceavailable,
+		EventTypeBillingalerttriggered,
+		EventTypeBillingPortalconfigurationcreated,
+		EventTypeBillingPortalconfigurationupdated,
+		EventTypeBillingPortalsessioncreated,
+		EventTypeCapabilityupdated,
+		EventTypeCashBalancefundsAvailable,
+		EventTypeChargecaptured,
+		EventTypeChargedisputeclosed,
+		EventTypeChargedisputecreated,
+		EventTypeChargedisputefundsReinstated,
+		EventTypeChargedisputefundsWithdrawn,
+		EventTypeChargedisputeupdated,
+		EventTypeChargeexpired,
+		EventTypeChargefailed,
+		EventTypeChargepending,
+		EventTypeChargerefundupdated,
+		EventTypeChargerefunded,
+		EventTypeChargesucceeded,
+		EventTypeChargeupdated,
+		EventTypeCheckoutsessionasyncPaymentFailed,
+		EventTypeCheckoutsessionasyncPaymentSucceeded,
+		EventTypeCheckoutsessioncompleted,
+		EventTypeCheckoutsessionexpired,
+		EventTypeClimateordercanceled,
+		EventTypeClimateordercreated,
+		EventTypeClimateorderdelayed,
+		EventTypeClimateorderdelivered,
+		EventTypeClimateorderproductSubstituted,
+		EventTypeClimateproductcreated,
+		EventTypeClimateproductpricingUpdated,
+		EventTypeCouponcreated,
+		EventTypeCoupondeleted,
+		EventTypeCouponupdated,
+		EventTypeCreditNotecreated,
+		EventTypeCreditNoteupdated,
+		EventTypeCreditNotevoided,
+		EventTypeCustomercreated,
+		EventTypeCustomerdeleted,
+		EventTypeCustomerdiscountcreated,
+		EventTypeCustomerdiscountdeleted,
+		EventTypeCustomerdiscountupdated,
+		EventTypeCustomersourcecreated,
+		EventTypeCustomersourcedeleted,
+		EventTypeCustomersourceexpiring,
+		EventTypeCustomersourceupdated,
+		EventTypeCustomersubscriptioncreated,
+		EventTypeCustomersubscriptiondeleted,
+		EventTypeCustomersubscriptionpaused,
+		EventTypeCustomersubscriptionpendingUpdateApplied,
+		EventTypeCustomersubscriptionpendingUpdateExpired,
+		EventTypeCustomersubscriptionresumed,
+		EventTypeCustomersubscriptiontrialWillEnd,
+		EventTypeCustomersubscriptionupdated,
+		EventTypeCustomertaxIdcreated,
+		EventTypeCustomertaxIddeleted,
+		EventTypeCustomertaxIdupdated,
+		EventTypeCustomerupdated,
+		EventTypeCustomerCashBalanceTransactioncreated,
+		EventTypeEntitlementsactiveEntitlementSummaryupdated,
+		EventTypeFilecreated,
+		EventTypeFinancialConnectionsaccountcreated,
+		EventTypeFinancialConnectionsaccountdeactivated,
+		EventTypeFinancialConnectionsaccountdisconnected,
+		EventTypeFinancialConnectionsaccountreactivated,
+		EventTypeFinancialConnectionsaccountrefreshedBalance,
+		EventTypeFinancialConnectionsaccountrefreshedOwnership,
+		EventTypeFinancialConnectionsaccountrefreshedTransactions,
+		EventTypeIdentityverificationSessioncanceled,
+		EventTypeIdentityverificationSessioncreated,
+		EventTypeIdentityverificationSessionprocessing,
+		EventTypeIdentityverificationSessionredacted,
+		EventTypeIdentityverificationSessionrequiresInput,
+		EventTypeIdentityverificationSessionverified,
+		EventTypeInvoicecreated,
+		EventTypeInvoicedeleted,
+		EventTypeInvoicefinalizationFailed,
+		EventTypeInvoicefinalized,
+		EventTypeInvoicemarkedUncollectible,
+		EventTypeInvoiceoverdue,
+		EventTypeInvoicepaid,
+		EventTypeInvoicepaymentActionRequired,
+		EventTypeInvoicepaymentFailed,
+		EventTypeInvoicepaymentSucceeded,
+		EventTypeInvoicesent,
+		EventTypeInvoiceupcoming,
+		EventTypeInvoiceupdated,
+		EventTypeInvoicevoided,
+		EventTypeInvoicewillBeDue,
+		EventTypeInvoiceitemcreated,
+		EventTypeInvoiceitemdeleted,
+		EventTypeIssuingAuthorizationcreated,
+		EventTypeIssuingAuthorizationrequest,
+		EventTypeIssuingAuthorizationupdated,
+		EventTypeIssuingCardcreated,
+		EventTypeIssuingCardupdated,
+		EventTypeIssuingCardholdercreated,
+		EventTypeIssuingCardholderupdated,
+		EventTypeIssuingDisputeclosed,
+		EventTypeIssuingDisputecreated,
+		EventTypeIssuingDisputefundsReinstated,
+		EventTypeIssuingDisputefundsRescinded,
+		EventTypeIssuingDisputesubmitted,
+		EventTypeIssuingDisputeupdated,
+		EventTypeIssuingPersonalizationDesignactivated,
+		EventTypeIssuingPersonalizationDesigndeactivated,
+		EventTypeIssuingPersonalizationDesignrejected,
+		EventTypeIssuingPersonalizationDesignupdated,
+		EventTypeIssuingTokencreated,
+		EventTypeIssuingTokenupdated,
+		EventTypeIssuingTransactioncreated,
+		EventTypeIssuingTransactionupdated,
+		EventTypeMandateupdated,
+		EventTypePaymentIntentamountCapturableUpdated,
+		EventTypePaymentIntentcanceled,
+		EventTypePaymentIntentcreated,
+		EventTypePaymentIntentpartiallyFunded,
+		EventTypePaymentIntentpaymentFailed,
+		EventTypePaymentIntentprocessing,
+		EventTypePaymentIntentrequiresAction,
+		EventTypePaymentIntentsucceeded,
+		EventTypePaymentLinkcreated,
+		EventTypePaymentLinkupdated,
+		EventTypePaymentMethodattached,
+		EventTypePaymentMethodautomaticallyUpdated,
+		EventTypePaymentMethoddetached,
+		EventTypePaymentMethodupdated,
+		EventTypePayoutcanceled,
+		EventTypePayoutcreated,
+		EventTypePayoutfailed,
+		EventTypePayoutpaid,
+		EventTypePayoutreconciliationCompleted,
+		EventTypePayoutupdated,
+		EventTypePersoncreated,
+		EventTypePersondeleted,
+		EventTypePersonupdated,
+		EventTypePlancreated,
+		EventTypePlandeleted,
+		EventTypePlanupdated,
+		EventTypePricecreated,
+		EventTypePricedeleted,
+		EventTypePriceupdated,
+		EventTypeProductcreated,
+		EventTypeProductdeleted,
+		EventTypeProductupdated,
+		EventTypePromotionCodecreated,
+		EventTypePromotionCodeupdated,
+		EventTypeQuoteaccepted,
+		EventTypeQuotecanceled,
+		EventTypeQuotecreated,
+		EventTypeQuotefinalized,
+		EventTypeRadarearlyFraudWarningcreated,
+		EventTypeRadarearlyFraudWarningupdated,
+		EventTypeRefundcreated,
+		EventTypeRefundupdated,
+		EventTypeReportingreportRunfailed,
+		EventTypeReportingreportRunsucceeded,
+		EventTypeReportingreportTypeupdated,
+		EventTypeReviewclosed,
+		EventTypeReviewopened,
+		EventTypeSetupIntentcanceled,
+		EventTypeSetupIntentcreated,
+		EventTypeSetupIntentrequiresAction,
+		EventTypeSetupIntentsetupFailed,
+		EventTypeSetupIntentsucceeded,
+		EventTypeSigmascheduledQueryRuncreated,
+		EventTypeSourcecanceled,
+		EventTypeSourcechargeable,
+		EventTypeSourcefailed,
+		EventTypeSourcemandateNotification,
+		EventTypeSourcerefundAttributesRequired,
+		EventTypeSourcetransactioncreated,
+		EventTypeSourcetransactionupdated,
+		EventTypeSubscriptionScheduleaborted,
+		EventTypeSubscriptionSchedulecanceled,
+		EventTypeSubscriptionSchedulecompleted,
+		EventTypeSubscriptionSchedulecreated,
+		EventTypeSubscriptionScheduleexpiring,
+		EventTypeSubscriptionSchedulereleased,
+		EventTypeSubscriptionScheduleupdated,
+		EventTypeTaxsettingsupdated,
+		EventTypeTaxRatecreated,
+		EventTypeTaxRateupdated,
+		EventTypeTerminalreaderactionFailed,
+		EventTypeTerminalreaderactionSucceeded,
+		EventTypeTestHelperstestClockadvancing,
+		EventTypeTestHelperstestClockcreated,
+		EventTypeTestHelperstestClockdeleted,
+		EventTypeTestHelperstestClockinternalFailure,
+		EventTypeTestHelperstestClockready,
+		EventTypeTopupcanceled,
+		EventTypeTopupcreated,
+		EventTypeTopupfailed,
+		EventTypeTopupreversed,
+		EventTypeTopupsucceeded,
+		EventTypeTransfercreated,
+		EventTypeTransferreversed,
+		EventTypeTransferupdated,
+		EventTypeTreasurycreditReversalcreated,
+		EventTypeTreasurycreditReversalposted,
+		EventTypeTreasurydebitReversalcompleted,
+		EventTypeTreasurydebitReversalcreated,
+		EventTypeTreasurydebitReversalinitialCreditGranted,
+		EventTypeTreasuryfinancialAccountclosed,
+		EventTypeTreasuryfinancialAccountcreated,
+		EventTypeTreasuryfinancialAccountfeaturesStatusUpdated,
+		EventTypeTreasuryinboundTransfercanceled,
+		EventTypeTreasuryinboundTransfercreated,
+		EventTypeTreasuryinboundTransferfailed,
+		EventTypeTreasuryinboundTransfersucceeded,
+		EventTypeTreasuryoutboundPaymentcanceled,
+		EventTypeTreasuryoutboundPaymentcreated,
+		EventTypeTreasuryoutboundPaymentexpectedArrivalDateUpdated,
+		EventTypeTreasuryoutboundPaymentfailed,
+		EventTypeTreasuryoutboundPaymentposted,
+		EventTypeTreasuryoutboundPaymentreturned,
+		EventTypeTreasuryoutboundPaymenttrackingDetailsUpdated,
+		EventTypeTreasuryoutboundTransfercanceled,
+		EventTypeTreasuryoutboundTransfercreated,
+		EventTypeTreasuryoutboundTransferexpectedArrivalDateUpdated,
+		EventTypeTreasuryoutboundTransferfailed,
+		EventTypeTreasuryoutboundTransferposted,
+		EventTypeTreasuryoutboundTransferreturned,
+		EventTypeTreasuryoutboundTransfertrackingDetailsUpdated,
+		EventTypeTreasuryreceivedCreditcreated,
+		EventTypeTreasuryreceivedCreditfailed,
+		EventTypeTreasuryreceivedCreditsucceeded,
+		EventTypeTreasuryreceivedDebitcreated:
+		return true
+	}
+	return false
+}
+
 type OrderStatus string
 
 const (
@@ -232,11 +1078,11 @@ func (e StockMovementType) Valid() bool {
 }
 
 type Cart struct {
-	ID         uint32             `json:"id"`
+	ID         int32              `json:"id"`
 	CustomerID string             `json:"customerId"`
 	Status     CartStatus         `json:"status"`
-	Currency   interface{}        `json:"currency"`
-	Subtotal   pgtype.Numeric     `json:"subtotal"`
+	Currency   Currency           `json:"currency"`
+	Subtotal   float64            `json:"subtotal"`
 	Tax        pgtype.Numeric     `json:"tax"`
 	Discount   pgtype.Numeric     `json:"discount"`
 	Total      pgtype.Numeric     `json:"total"`
@@ -246,20 +1092,20 @@ type Cart struct {
 }
 
 type CartItem struct {
-	ID        uint32             `json:"id"`
-	CartID    int32              `json:"cartId"`
+	ID        int32              `json:"id"`
+	CartID    uint64             `json:"cartId"`
 	ProductID string             `json:"productId"`
 	PriceID   string             `json:"priceId"`
-	StockID   *int32             `json:"stockId"`
-	Quantity  int32              `json:"quantity"`
-	UnitPrice pgtype.Numeric     `json:"unitPrice"`
-	Subtotal  pgtype.Numeric     `json:"subtotal"`
+	StockID   uint64             `json:"stockId"`
+	Quantity  uint64             `json:"quantity"`
+	UnitPrice float64            `json:"unitPrice"`
+	Subtotal  float64            `json:"subtotal"`
 	CreatedAt pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt pgtype.Timestamptz `json:"updatedAt"`
 }
 
 type Category struct {
-	ID          uint32             `json:"id"`
+	ID          int32              `json:"id"`
 	Name        string             `json:"name"`
 	Description *string            `json:"description"`
 	ParentID    *int32             `json:"parentId"`
@@ -267,13 +1113,21 @@ type Category struct {
 	UpdatedAt   pgtype.Timestamptz `json:"updatedAt"`
 }
 
+type Event struct {
+	ID        string             `json:"id"`
+	Type      EventType          `json:"type"`
+	Processed bool               `json:"processed"`
+	CreatedAt pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt pgtype.Timestamptz `json:"updatedAt"`
+}
+
 type Order struct {
-	ID              uint32             `json:"id"`
+	ID              int32              `json:"id"`
 	CustomerID      string             `json:"customerId"`
-	CartID          *int32             `json:"cartId"`
+	CartID          uint64             `json:"cartId"`
 	Status          OrderStatus        `json:"status"`
-	Currency        interface{}        `json:"currency"`
-	Subtotal        pgtype.Numeric     `json:"subtotal"`
+	Currency        Currency           `json:"currency"`
+	Subtotal        float64            `json:"subtotal"`
 	Tax             pgtype.Numeric     `json:"tax"`
 	Discount        pgtype.Numeric     `json:"discount"`
 	Total           pgtype.Numeric     `json:"total"`
@@ -285,14 +1139,14 @@ type Order struct {
 }
 
 type OrderItem struct {
-	ID        uint32             `json:"id"`
+	ID        int32              `json:"id"`
 	OrderID   int32              `json:"orderId"`
 	ProductID string             `json:"productId"`
 	PriceID   string             `json:"priceId"`
-	StockID   *int32             `json:"stockId"`
-	Quantity  int32              `json:"quantity"`
-	UnitPrice pgtype.Numeric     `json:"unitPrice"`
-	Subtotal  pgtype.Numeric     `json:"subtotal"`
+	StockID   uint64             `json:"stockId"`
+	Quantity  uint64             `json:"quantity"`
+	UnitPrice float64            `json:"unitPrice"`
+	Subtotal  float64            `json:"subtotal"`
 	CreatedAt pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt pgtype.Timestamptz `json:"updatedAt"`
 }
@@ -304,9 +1158,9 @@ type ProductCategory struct {
 }
 
 type Stock struct {
-	ID               uint32             `json:"id"`
+	ID               int32              `json:"id"`
 	ProductID        string             `json:"productId"`
-	Quantity         int32              `json:"quantity"`
+	Quantity         uint64             `json:"quantity"`
 	ReservedQuantity int32              `json:"reservedQuantity"`
 	Location         *string            `json:"location"`
 	CreatedAt        pgtype.Timestamptz `json:"createdAt"`
@@ -314,9 +1168,9 @@ type Stock struct {
 }
 
 type StockMovement struct {
-	ID            uint32                         `json:"id"`
-	StockID       int32                          `json:"stockId"`
-	Quantity      int32                          `json:"quantity"`
+	ID            int32                          `json:"id"`
+	StockID       uint64                         `json:"stockId"`
+	Quantity      uint64                         `json:"quantity"`
 	Type          StockMovementType              `json:"type"`
 	ReferenceID   *int32                         `json:"referenceId"`
 	ReferenceType NullStockMovementReferenceType `json:"referenceType"`

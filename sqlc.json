@@ -23,20 +23,28 @@
         "sql_package": "pgx/v5",
         "overrides": [
           {
-            "column": "*.id",
-            "go_type": "uint32"
-          },
-          {
             "column": "*.user_id",
-            "go_type": "uint32"
+            "go_type": "uint64"
           },
           {
-            "column": "*.role_id",
-            "go_type": "uint32"
+            "column": "*.cart_id",
+            "go_type": "uint64"
           },
           {
-            "column": "*.permission_id",
-            "go_type": "uint32"
+            "column": "*.stock_id",
+            "go_type": "uint64"
+          },
+          {
+            "column": "*.quantity",
+            "go_type": "uint64"
+          },
+          {
+            "column": "*.unit_price",
+            "go_type": "float64"
+          },
+          {
+            "column": "*.subtotal",
+            "go_type": "float64"
           }
         ]
       }

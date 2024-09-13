@@ -6,11 +6,11 @@ import (
 )
 
 type StockMovement struct {
-	ID            int                             `json:"id"`
-	StockID       int                             `json:"stock_id"`
-	Quantity      int                             `json:"quantity"`
+	ID            uint64                          `json:"id"`
+	StockID       uint64                          `json:"stock_id"`
+	Quantity      uint64                          `json:"quantity"`
 	Type          enum.StockMovementType          `json:"type"`
 	ReferenceType enum.StockMovementReferenceType `json:"reference_type"`
-	ReferenceID   int                             `json:"reference_id"`
+	ReferenceID   uint64                          `json:"reference_id"`
 	CreatedAt     time.Time                       `json:"created_at"`
 }

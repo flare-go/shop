@@ -9,26 +9,48 @@ import (
 )
 
 type Querier interface {
-	AddCartItem(ctx context.Context, arg AddCartItemParams) (*CartItem, error)
-	CreateCart(ctx context.Context, arg CreateCartParams) (*Cart, error)
-	CreateCategory(ctx context.Context, arg CreateCategoryParams) (*Category, error)
-	CreateOrder(ctx context.Context, arg CreateOrderParams) (*Order, error)
-	CreateStock(ctx context.Context, arg CreateStockParams) (*Stock, error)
-	CreateStockMovement(ctx context.Context, arg CreateStockMovementParams) (*CreateStockMovementRow, error)
-	DeleteCategory(ctx context.Context, id uint32) error
-	GetCart(ctx context.Context, id uint32) (*Cart, error)
-	GetCategory(ctx context.Context, id uint32) (*Category, error)
-	GetOrder(ctx context.Context, id uint32) (*Order, error)
-	GetStock(ctx context.Context, id uint32) (*Stock, error)
+	AddCartItem(ctx context.Context, arg AddCartItemParams) error
+	AddOrderItems(ctx context.Context, arg []AddOrderItemsParams) *AddOrderItemsBatchResults
+	AdjustStock(ctx context.Context, arg []AdjustStockParams) *AdjustStockBatchResults
+	AssignProductToCategory(ctx context.Context, arg AssignProductToCategoryParams) error
+	ClearCartItems(ctx context.Context, cartID uint64) error
+	CreateCart(ctx context.Context, arg CreateCartParams) error
+	CreateCategory(ctx context.Context, arg CreateCategoryParams) error
+	CreateEvent(ctx context.Context, arg CreateEventParams) error
+	CreateOrder(ctx context.Context, arg CreateOrderParams) error
+	CreateStockMovement(ctx context.Context, arg []CreateStockMovementParams) *CreateStockMovementBatchResults
+	DeleteCategory(ctx context.Context, id int32) error
+	DeleteOrder(ctx context.Context, id int32) error
+	DeleteOrderItem(ctx context.Context, id int32) error
+	FindActiveCartByCustomerID(ctx context.Context, customerID string) (*FindActiveCartByCustomerIDRow, error)
+	FindCartItemByProductID(ctx context.Context, arg FindCartItemByProductIDParams) (*CartItem, error)
+	GetCart(ctx context.Context, id int32) (*GetCartRow, error)
+	GetCartItem(ctx context.Context, id int32) (*CartItem, error)
+	GetCategoryByID(ctx context.Context, id int32) (*Category, error)
+	GetEventByID(ctx context.Context, id string) (*Event, error)
+	GetOrder(ctx context.Context, id int32) (*GetOrderRow, error)
+	GetOrderItem(ctx context.Context, id int32) (*GetOrderItemRow, error)
+	GetStock(ctx context.Context, id int32) (*Stock, error)
+	GetStockMovementsByReference(ctx context.Context, arg GetStockMovementsByReferenceParams) ([]*StockMovement, error)
+	ListCartItems(ctx context.Context, cartID uint64) ([]*CartItem, error)
 	ListCategories(ctx context.Context, arg ListCategoriesParams) ([]*Category, error)
-	ListOrders(ctx context.Context, arg ListOrdersParams) ([]*Order, error)
-	ListStocks(ctx context.Context, arg ListStocksParams) ([]*Stock, error)
-	RemoveCartItem(ctx context.Context, arg RemoveCartItemParams) error
+	ListOrderItems(ctx context.Context, orderID int32) ([]*ListOrderItemsRow, error)
+	ListOrders(ctx context.Context, arg ListOrdersParams) ([]*ListOrdersRow, error)
+	ListStockMovements(ctx context.Context, arg ListStockMovementsParams) ([]*StockMovement, error)
+	ListSubcategories(ctx context.Context, parentID *int32) ([]*Category, error)
+	MarkEventAsProcessed(ctx context.Context, arg MarkEventAsProcessedParams) error
+	ReduceStock(ctx context.Context, arg []ReduceStockParams) *ReduceStockBatchResults
+	ReleaseStock(ctx context.Context, arg []ReleaseStockParams) *ReleaseStockBatchResults
+	RemoveCartItem(ctx context.Context, id int32) error
+	RemoveProductFromCategory(ctx context.Context, arg RemoveProductFromCategoryParams) error
+	UpdateCartItem(ctx context.Context, arg UpdateCartItemParams) error
 	UpdateCartItemQuantity(ctx context.Context, arg UpdateCartItemQuantityParams) error
-	UpdateCartStatus(ctx context.Context, arg UpdateCartStatusParams) (*Cart, error)
-	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (*Category, error)
-	UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) (*Order, error)
-	UpdateStock(ctx context.Context, arg UpdateStockParams) (*Stock, error)
+	UpdateCartStatus(ctx context.Context, arg UpdateCartStatusParams) error
+	UpdateCartTotals(ctx context.Context, arg UpdateCartTotalsParams) error
+	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) error
+	UpdateOrderItem(ctx context.Context, arg UpdateOrderItemParams) error
+	UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) error
+	UpdateOrderTotals(ctx context.Context, arg UpdateOrderTotalsParams) error
 }
 
 var _ Querier = (*Queries)(nil)

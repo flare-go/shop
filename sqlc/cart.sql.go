@@ -11,24 +11,23 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const addCartItem = `-- name: AddCartItem :one
-INSERT INTO cart_items (cart_id, product_id, price_id, stock_id, quantity, unit_price, subtotal)
-VALUES ($1, $2, $3, $4, $5, $6, $7)
-RETURNING id, cart_id, product_id, price_id, stock_id, quantity, unit_price, subtotal, created_at, updated_at
+const addCartItem = `-- name: AddCartItem :exec
+INSERT INTO cart_items (cart_id, product_id, price_id, stock_id, quantity, unit_price, subtotal, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
 `
 
 type AddCartItemParams struct {
-	CartID    int32          `json:"cartId"`
-	ProductID string         `json:"productId"`
-	PriceID   string         `json:"priceId"`
-	StockID   *int32         `json:"stockId"`
-	Quantity  int32          `json:"quantity"`
-	UnitPrice pgtype.Numeric `json:"unitPrice"`
-	Subtotal  pgtype.Numeric `json:"subtotal"`
+	CartID    uint64  `json:"cartId"`
+	ProductID string  `json:"productId"`
+	PriceID   string  `json:"priceId"`
+	StockID   uint64  `json:"stockId"`
+	Quantity  uint64  `json:"quantity"`
+	UnitPrice float64 `json:"unitPrice"`
+	Subtotal  float64 `json:"subtotal"`
 }
 
-func (q *Queries) AddCartItem(ctx context.Context, arg AddCartItemParams) (*CartItem, error) {
-	row := q.db.QueryRow(ctx, addCartItem,
+func (q *Queries) AddCartItem(ctx context.Context, arg AddCartItemParams) error {
+	_, err := q.db.Exec(ctx, addCartItem,
 		arg.CartID,
 		arg.ProductID,
 		arg.PriceID,
@@ -37,6 +36,92 @@ func (q *Queries) AddCartItem(ctx context.Context, arg AddCartItemParams) (*Cart
 		arg.UnitPrice,
 		arg.Subtotal,
 	)
+	return err
+}
+
+const clearCartItems = `-- name: ClearCartItems :exec
+DELETE FROM cart_items WHERE cart_id = $1
+`
+
+func (q *Queries) ClearCartItems(ctx context.Context, cartID uint64) error {
+	_, err := q.db.Exec(ctx, clearCartItems, cartID)
+	return err
+}
+
+const createCart = `-- name: CreateCart :exec
+INSERT INTO carts (customer_id, status, currency, subtotal, tax, discount, total, expires_at, created_at, updated_at)
+VALUES ($1, $2, $3, 0, 0, 0, 0, $4, NOW(), NOW())
+`
+
+type CreateCartParams struct {
+	CustomerID string             `json:"customerId"`
+	Status     CartStatus         `json:"status"`
+	Currency   Currency           `json:"currency"`
+	ExpiresAt  pgtype.Timestamptz `json:"expiresAt"`
+}
+
+func (q *Queries) CreateCart(ctx context.Context, arg CreateCartParams) error {
+	_, err := q.db.Exec(ctx, createCart,
+		arg.CustomerID,
+		arg.Status,
+		arg.Currency,
+		arg.ExpiresAt,
+	)
+	return err
+}
+
+const findActiveCartByCustomerID = `-- name: FindActiveCartByCustomerID :one
+SELECT id, customer_id, status, currency, subtotal, tax, discount, total, expires_at, created_at, updated_at
+FROM carts
+WHERE customer_id = $1 AND status = 'active' LIMIT 1
+`
+
+type FindActiveCartByCustomerIDRow struct {
+	ID         int32              `json:"id"`
+	CustomerID string             `json:"customerId"`
+	Status     CartStatus         `json:"status"`
+	Currency   Currency           `json:"currency"`
+	Subtotal   float64            `json:"subtotal"`
+	Tax        pgtype.Numeric     `json:"tax"`
+	Discount   pgtype.Numeric     `json:"discount"`
+	Total      pgtype.Numeric     `json:"total"`
+	ExpiresAt  pgtype.Timestamptz `json:"expiresAt"`
+	CreatedAt  pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt  pgtype.Timestamptz `json:"updatedAt"`
+}
+
+func (q *Queries) FindActiveCartByCustomerID(ctx context.Context, customerID string) (*FindActiveCartByCustomerIDRow, error) {
+	row := q.db.QueryRow(ctx, findActiveCartByCustomerID, customerID)
+	var i FindActiveCartByCustomerIDRow
+	err := row.Scan(
+		&i.ID,
+		&i.CustomerID,
+		&i.Status,
+		&i.Currency,
+		&i.Subtotal,
+		&i.Tax,
+		&i.Discount,
+		&i.Total,
+		&i.ExpiresAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return &i, err
+}
+
+const findCartItemByProductID = `-- name: FindCartItemByProductID :one
+SELECT id, cart_id, product_id, price_id, stock_id, quantity, unit_price, subtotal, created_at, updated_at
+FROM cart_items
+WHERE cart_id = $1 AND product_id = $2
+`
+
+type FindCartItemByProductIDParams struct {
+	CartID    uint64 `json:"cartId"`
+	ProductID string `json:"productId"`
+}
+
+func (q *Queries) FindCartItemByProductID(ctx context.Context, arg FindCartItemByProductIDParams) (*CartItem, error) {
+	row := q.db.QueryRow(ctx, findCartItemByProductID, arg.CartID, arg.ProductID)
 	var i CartItem
 	err := row.Scan(
 		&i.ID,
@@ -53,45 +138,29 @@ func (q *Queries) AddCartItem(ctx context.Context, arg AddCartItemParams) (*Cart
 	return &i, err
 }
 
-const createCart = `-- name: CreateCart :one
-INSERT INTO carts (customer_id, currency, status)
-VALUES ($1, $2, 'active')
-RETURNING id, customer_id, status, currency, subtotal, tax, discount, total, created_at, updated_at, expires_at
-`
-
-type CreateCartParams struct {
-	CustomerID string      `json:"customerId"`
-	Currency   interface{} `json:"currency"`
-}
-
-func (q *Queries) CreateCart(ctx context.Context, arg CreateCartParams) (*Cart, error) {
-	row := q.db.QueryRow(ctx, createCart, arg.CustomerID, arg.Currency)
-	var i Cart
-	err := row.Scan(
-		&i.ID,
-		&i.CustomerID,
-		&i.Status,
-		&i.Currency,
-		&i.Subtotal,
-		&i.Tax,
-		&i.Discount,
-		&i.Total,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.ExpiresAt,
-	)
-	return &i, err
-}
-
 const getCart = `-- name: GetCart :one
-SELECT id, customer_id, status, currency, subtotal, tax, discount, total, created_at, updated_at, expires_at
+SELECT id, customer_id, status, currency, subtotal, tax, discount, total, expires_at, created_at, updated_at
 FROM carts
-WHERE id = $1 LIMIT 1
+WHERE id = $1
 `
 
-func (q *Queries) GetCart(ctx context.Context, id uint32) (*Cart, error) {
+type GetCartRow struct {
+	ID         int32              `json:"id"`
+	CustomerID string             `json:"customerId"`
+	Status     CartStatus         `json:"status"`
+	Currency   Currency           `json:"currency"`
+	Subtotal   float64            `json:"subtotal"`
+	Tax        pgtype.Numeric     `json:"tax"`
+	Discount   pgtype.Numeric     `json:"discount"`
+	Total      pgtype.Numeric     `json:"total"`
+	ExpiresAt  pgtype.Timestamptz `json:"expiresAt"`
+	CreatedAt  pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt  pgtype.Timestamptz `json:"updatedAt"`
+}
+
+func (q *Queries) GetCart(ctx context.Context, id int32) (*GetCartRow, error) {
 	row := q.db.QueryRow(ctx, getCart, id)
-	var i Cart
+	var i GetCartRow
 	err := row.Scan(
 		&i.ID,
 		&i.CustomerID,
@@ -101,77 +170,154 @@ func (q *Queries) GetCart(ctx context.Context, id uint32) (*Cart, error) {
 		&i.Tax,
 		&i.Discount,
 		&i.Total,
+		&i.ExpiresAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.ExpiresAt,
 	)
 	return &i, err
+}
+
+const getCartItem = `-- name: GetCartItem :one
+SELECT id, cart_id, product_id, price_id, stock_id, quantity, unit_price, subtotal, created_at, updated_at
+FROM cart_items
+WHERE id = $1
+`
+
+func (q *Queries) GetCartItem(ctx context.Context, id int32) (*CartItem, error) {
+	row := q.db.QueryRow(ctx, getCartItem, id)
+	var i CartItem
+	err := row.Scan(
+		&i.ID,
+		&i.CartID,
+		&i.ProductID,
+		&i.PriceID,
+		&i.StockID,
+		&i.Quantity,
+		&i.UnitPrice,
+		&i.Subtotal,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return &i, err
+}
+
+const listCartItems = `-- name: ListCartItems :many
+SELECT id, cart_id, product_id, price_id, stock_id, quantity, unit_price, subtotal, created_at, updated_at
+FROM cart_items
+WHERE cart_id = $1
+`
+
+func (q *Queries) ListCartItems(ctx context.Context, cartID uint64) ([]*CartItem, error) {
+	rows, err := q.db.Query(ctx, listCartItems, cartID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []*CartItem{}
+	for rows.Next() {
+		var i CartItem
+		if err := rows.Scan(
+			&i.ID,
+			&i.CartID,
+			&i.ProductID,
+			&i.PriceID,
+			&i.StockID,
+			&i.Quantity,
+			&i.UnitPrice,
+			&i.Subtotal,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const removeCartItem = `-- name: RemoveCartItem :exec
-DELETE FROM cart_items WHERE id = $1 AND cart_id = $2
+DELETE FROM cart_items WHERE id = $1
 `
 
-type RemoveCartItemParams struct {
-	ID     uint32 `json:"id"`
-	CartID int32  `json:"cartId"`
+func (q *Queries) RemoveCartItem(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, removeCartItem, id)
+	return err
 }
 
-func (q *Queries) RemoveCartItem(ctx context.Context, arg RemoveCartItemParams) error {
-	_, err := q.db.Exec(ctx, removeCartItem, arg.ID, arg.CartID)
+const updateCartItem = `-- name: UpdateCartItem :exec
+UPDATE cart_items
+SET quantity = $2, subtotal = $3, updated_at = NOW()
+WHERE id = $1 AND updated_at = $4
+`
+
+type UpdateCartItemParams struct {
+	ID        int32              `json:"id"`
+	Quantity  uint64             `json:"quantity"`
+	Subtotal  float64            `json:"subtotal"`
+	UpdatedAt pgtype.Timestamptz `json:"updatedAt"`
+}
+
+func (q *Queries) UpdateCartItem(ctx context.Context, arg UpdateCartItemParams) error {
+	_, err := q.db.Exec(ctx, updateCartItem,
+		arg.ID,
+		arg.Quantity,
+		arg.Subtotal,
+		arg.UpdatedAt,
+	)
 	return err
 }
 
 const updateCartItemQuantity = `-- name: UpdateCartItemQuantity :exec
 UPDATE cart_items
-SET quantity = $3, subtotal = $4, updated_at = NOW()
-WHERE id = $1 AND cart_id = $2
+SET quantity = $2, subtotal = $3, updated_at = NOW()
+WHERE id = $1
 `
 
 type UpdateCartItemQuantityParams struct {
-	ID       uint32         `json:"id"`
-	CartID   int32          `json:"cartId"`
-	Quantity int32          `json:"quantity"`
-	Subtotal pgtype.Numeric `json:"subtotal"`
+	ID       int32   `json:"id"`
+	Quantity uint64  `json:"quantity"`
+	Subtotal float64 `json:"subtotal"`
 }
 
 func (q *Queries) UpdateCartItemQuantity(ctx context.Context, arg UpdateCartItemQuantityParams) error {
-	_, err := q.db.Exec(ctx, updateCartItemQuantity,
-		arg.ID,
-		arg.CartID,
-		arg.Quantity,
-		arg.Subtotal,
-	)
+	_, err := q.db.Exec(ctx, updateCartItemQuantity, arg.ID, arg.Quantity, arg.Subtotal)
 	return err
 }
 
-const updateCartStatus = `-- name: UpdateCartStatus :one
+const updateCartStatus = `-- name: UpdateCartStatus :exec
 UPDATE carts
 SET status = $2, updated_at = NOW()
-WHERE id = $1
-RETURNING id, customer_id, status, currency, subtotal, tax, discount, total, created_at, updated_at, expires_at
+WHERE id = $1 AND updated_at = $3
 `
 
 type UpdateCartStatusParams struct {
-	ID     uint32     `json:"id"`
-	Status CartStatus `json:"status"`
+	ID        int32              `json:"id"`
+	Status    CartStatus         `json:"status"`
+	UpdatedAt pgtype.Timestamptz `json:"updatedAt"`
 }
 
-func (q *Queries) UpdateCartStatus(ctx context.Context, arg UpdateCartStatusParams) (*Cart, error) {
-	row := q.db.QueryRow(ctx, updateCartStatus, arg.ID, arg.Status)
-	var i Cart
-	err := row.Scan(
-		&i.ID,
-		&i.CustomerID,
-		&i.Status,
-		&i.Currency,
-		&i.Subtotal,
-		&i.Tax,
-		&i.Discount,
-		&i.Total,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.ExpiresAt,
-	)
-	return &i, err
+func (q *Queries) UpdateCartStatus(ctx context.Context, arg UpdateCartStatusParams) error {
+	_, err := q.db.Exec(ctx, updateCartStatus, arg.ID, arg.Status, arg.UpdatedAt)
+	return err
+}
+
+const updateCartTotals = `-- name: UpdateCartTotals :exec
+UPDATE carts
+SET subtotal = (SELECT COALESCE(SUM(subtotal), 0) FROM cart_items WHERE cart_id = $1),
+    total = subtotal + tax - discount,
+    updated_at = NOW()
+WHERE id = $1 AND updated_at = $2
+`
+
+type UpdateCartTotalsParams struct {
+	Column1 *int32             `json:"column1"`
+	Column2 pgtype.Timestamptz `json:"column2"`
+}
+
+func (q *Queries) UpdateCartTotals(ctx context.Context, arg UpdateCartTotalsParams) error {
+	_, err := q.db.Exec(ctx, updateCartTotals, arg.Column1, arg.Column2)
+	return err
 }
