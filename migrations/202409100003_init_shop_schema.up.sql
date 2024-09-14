@@ -85,6 +85,7 @@ CREATE TABLE orders (
                         payment_intent_id VARCHAR(255) REFERENCES payment_intents(id),
                         invoice_id VARCHAR(255),
                         subscription_id VARCHAR(255),
+                        refund_id VARCHAR(255),
                         shipping_address JSONB NOT NULL,
                         billing_address JSONB NOT NULL,
                         created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
@@ -111,6 +112,7 @@ CREATE INDEX idx_cart_items_cart_id ON cart_items(cart_id);
 CREATE INDEX idx_cart_items_product_id ON cart_items(product_id);
 CREATE INDEX idx_orders_customer_id ON orders(customer_id);
 CREATE INDEX idx_orders_status ON orders(status);
+CREATE INDEX idx_orders_refund_id ON orders(refund_id);
 CREATE INDEX idx_orders_payment_intent_id ON orders(payment_intent_id);
 CREATE INDEX idx_order_items_order_id ON order_items(order_id);
 CREATE INDEX idx_order_items_product_id ON order_items(product_id);

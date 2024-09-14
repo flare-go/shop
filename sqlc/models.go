@@ -913,11 +913,13 @@ func (e EventType) Valid() bool {
 type OrderStatus string
 
 const (
-	OrderStatusPending    OrderStatus = "pending"
-	OrderStatusProcessing OrderStatus = "processing"
-	OrderStatusCompleted  OrderStatus = "completed"
-	OrderStatusCancelled  OrderStatus = "cancelled"
-	OrderStatusRefunded   OrderStatus = "refunded"
+	OrderStatusPending           OrderStatus = "pending"
+	OrderStatusProcessing        OrderStatus = "processing"
+	OrderStatusCompleted         OrderStatus = "completed"
+	OrderStatusCancelled         OrderStatus = "cancelled"
+	OrderStatusRefunded          OrderStatus = "refunded"
+	OrderStatusDisputed          OrderStatus = "disputed"
+	OrderStatusPartiallyRefunded OrderStatus = "partially_refunded"
 )
 
 func (e *OrderStatus) Scan(src interface{}) error {
@@ -961,7 +963,9 @@ func (e OrderStatus) Valid() bool {
 		OrderStatusProcessing,
 		OrderStatusCompleted,
 		OrderStatusCancelled,
-		OrderStatusRefunded:
+		OrderStatusRefunded,
+		OrderStatusDisputed,
+		OrderStatusPartiallyRefunded:
 		return true
 	}
 	return false
@@ -1083,9 +1087,9 @@ type Cart struct {
 	Status     CartStatus         `json:"status"`
 	Currency   Currency           `json:"currency"`
 	Subtotal   float64            `json:"subtotal"`
-	Tax        pgtype.Numeric     `json:"tax"`
-	Discount   pgtype.Numeric     `json:"discount"`
-	Total      pgtype.Numeric     `json:"total"`
+	Tax        float64            `json:"tax"`
+	Discount   float64            `json:"discount"`
+	Total      float64            `json:"total"`
 	CreatedAt  pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt  pgtype.Timestamptz `json:"updatedAt"`
 	ExpiresAt  pgtype.Timestamptz `json:"expiresAt"`
@@ -1128,10 +1132,13 @@ type Order struct {
 	Status          OrderStatus        `json:"status"`
 	Currency        Currency           `json:"currency"`
 	Subtotal        float64            `json:"subtotal"`
-	Tax             pgtype.Numeric     `json:"tax"`
-	Discount        pgtype.Numeric     `json:"discount"`
-	Total           pgtype.Numeric     `json:"total"`
+	Tax             float64            `json:"tax"`
+	Discount        float64            `json:"discount"`
+	Total           float64            `json:"total"`
 	PaymentIntentID *string            `json:"paymentIntentId"`
+	InvoiceID       *string            `json:"invoiceId"`
+	SubscriptionID  *string            `json:"subscriptionId"`
+	RefundID        *string            `json:"refundId"`
 	ShippingAddress []byte             `json:"shippingAddress"`
 	BillingAddress  []byte             `json:"billingAddress"`
 	CreatedAt       pgtype.Timestamptz `json:"createdAt"`

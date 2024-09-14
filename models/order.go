@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/stripe/stripe-go/v79"
 	"gofalre.io/shop/models/enum"
-	"time"
+	"gofalre.io/shop/sqlc"
 )
 
 // Order 代表訂單
@@ -23,6 +25,7 @@ type Order struct {
 	PaymentIntentID string           `json:"payment_intent_id"`
 	SubscriptionID  string           `json:"subscription_id"`
 	InvoiceID       string           `json:"invoice_id"`
+	RefundID        string           `json:"refund_id"`
 	ShippingAddress json.RawMessage  `json:"shipping_address"`
 	BillingAddress  json.RawMessage  `json:"billing_address"`
 	Items           []*OrderItem     `json:"items"`
@@ -147,6 +150,77 @@ func (oi *OrderItem) Validate() error {
 	return nil
 }
 
-func NewOrder() *Order {
-	return new(Order)
+func (o *Order) ConvertSqlcOrder(sqlcOrder any) *Order {
+	switch sp := sqlcOrder.(type) {
+	case *sqlc.Order:
+		o.ID = uint64(sp.ID)
+		o.CustomerID = sp.CustomerID
+		o.CartID = &sp.CartID
+		o.Status = enum.OrderStatus(sp.Status)
+		o.Currency = stripe.Currency(sp.Currency)
+		o.Subtotal = sp.Subtotal
+		o.Tax = sp.Tax
+		o.Discount = sp.Discount
+		o.Total = sp.Total
+		if sp.PaymentIntentID != nil {
+			o.PaymentIntentID = *sp.PaymentIntentID
+		}
+		if sp.SubscriptionID != nil {
+			o.SubscriptionID = *sp.SubscriptionID
+		}
+		if sp.InvoiceID != nil {
+			o.InvoiceID = *sp.InvoiceID
+		}
+		if sp.RefundID != nil {
+			o.RefundID = *sp.RefundID
+		}
+		o.ShippingAddress = sp.ShippingAddress
+		o.BillingAddress = sp.BillingAddress
+		o.CreatedAt = sp.CreatedAt.Time
+		o.UpdatedAt = sp.UpdatedAt.Time
+	case *sqlc.ListOrdersRow:
+		o.ID = uint64(sp.ID)
+		o.CustomerID = sp.CustomerID
+		o.CartID = &sp.CartID
+		o.Status = enum.OrderStatus(sp.Status)
+		o.Currency = stripe.Currency(sp.Currency)
+		o.Subtotal = sp.Subtotal
+		o.Tax = sp.Tax
+		o.Discount = sp.Discount
+		o.Total = sp.Total
+		o.CreatedAt = sp.CreatedAt.Time
+		o.UpdatedAt = sp.UpdatedAt.Time
+	case *sqlc.GetOrderRow:
+		o.ID = uint64(sp.ID)
+		o.UpdatedAt = sp.UpdatedAt.Time
+	case *sqlc.GetOrderByCustomerIDAndSubscriptionIDRow:
+		o.ID = uint64(sp.ID)
+		o.CreatedAt = sp.CreatedAt.Time
+		o.UpdatedAt = sp.UpdatedAt.Time
+	}
+	return o
+}
+
+func (oi *OrderItem) ConvertSqlcOrderItem(sqlcOrderItem any) *OrderItem {
+
+	switch sp := sqlcOrderItem.(type) {
+	case *sqlc.OrderItem:
+		oi.ID = uint64(sp.ID)
+		oi.OrderID = uint64(sp.OrderID)
+		oi.ProductID = sp.ProductID
+		oi.PriceID = sp.PriceID
+		oi.StockID = sp.StockID
+		oi.Quantity = sp.Quantity
+		oi.UnitPrice = sp.UnitPrice
+		oi.Subtotal = sp.Subtotal
+	case *sqlc.ListOrderItemsRow:
+		oi.ID = uint64(sp.ID)
+		oi.OrderID = uint64(sp.OrderID)
+		oi.ProductID = sp.ProductID
+		oi.PriceID = sp.PriceID
+		oi.StockID = sp.StockID
+		oi.Quantity = sp.Quantity
+		oi.UnitPrice = sp.UnitPrice
+	}
+	return oi
 }

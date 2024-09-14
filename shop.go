@@ -87,7 +87,7 @@ func NewService(
 }
 func (s *service) CreateCart(ctx context.Context, customerID string, currency stripe.Currency) (*models.Cart, error) {
 
-	cartModel := models.NewCart()
+	cartModel := new(models.Cart)
 	err := s.transactionManager.ExecuteTransaction(ctx, func(tx pgx.Tx) error {
 
 		existingCart, err := s.cart.GetActiveCartByCustomerID(ctx, tx, customerID)
@@ -193,14 +193,14 @@ func (s *service) AddItemsToCart(ctx context.Context, customerID string, cartID 
 			// 準備庫存調整參數
 			adjustParams = append(adjustParams, stock.AdjustStockParams{
 				StockID:     item.StockID,
-				Quantity:    int64(item.Quantity),
+				Quantity:    item.Quantity,
 				LastUpdated: stockModel.UpdatedAt,
 			})
 
 			// 準備庫存變動記錄參數
 			moveParams = append(moveParams, stock.CreateStockMovementParams{
 				StockID:       item.StockID,
-				Quantity:      int64(item.Quantity),
+				Quantity:      item.Quantity,
 				Type:          enum.StockMovementTypeReserve,
 				ReferenceID:   cartID,
 				ReferenceType: enum.StockMovementReferenceTypeCart,
@@ -243,7 +243,7 @@ func (s *service) RemoveItemFromCart(ctx context.Context, cartID, itemID uint64)
 		adjustParams := []stock.AdjustStockParams{
 			{
 				StockID:     item.StockID,
-				Quantity:    int64(item.Quantity),
+				Quantity:    item.Quantity,
 				LastUpdated: stockModel.UpdatedAt,
 			},
 		}
@@ -254,7 +254,7 @@ func (s *service) RemoveItemFromCart(ctx context.Context, cartID, itemID uint64)
 		moveParams := []stock.CreateStockMovementParams{
 			{
 				StockID:       item.StockID,
-				Quantity:      int64(item.Quantity),
+				Quantity:      item.Quantity,
 				Type:          enum.StockMovementTypeReserve,
 				ReferenceID:   cartID,
 				ReferenceType: enum.StockMovementReferenceTypeCart,
@@ -294,13 +294,13 @@ func (s *service) ClearCart(ctx context.Context, cartID uint64, status enum.Cart
 
 				releaseParams[i] = stock.ReleaseStockParams{
 					StockID:     item.StockID,
-					Quantity:    int64(item.Quantity),
+					Quantity:    item.Quantity,
 					LastUpdated: stockModel.UpdatedAt,
 				}
 
 				moveParams[i] = stock.CreateStockMovementParams{
 					StockID:       item.StockID,
-					Quantity:      int64(item.Quantity),
+					Quantity:      item.Quantity,
 					Type:          enum.StockMovementTypeRelease,
 					ReferenceID:   cartID,
 					ReferenceType: enum.StockMovementReferenceTypeCart,
@@ -345,7 +345,7 @@ func (s *service) UpdateCartItemQuantity(ctx context.Context, cartID, itemID, ne
 		}
 
 		// 2. 計算數量差異
-		quantityDiff := int64(newQuantity) - int64(item.Quantity)
+		quantityDiff := newQuantity - item.Quantity
 
 		// 3. 獲取庫存信息
 		stockModel, err := s.stock.GetStock(ctx, tx, item.StockID)
@@ -354,7 +354,7 @@ func (s *service) UpdateCartItemQuantity(ctx context.Context, cartID, itemID, ne
 		}
 
 		// 4. 檢查庫存是否足夠（如果是增加數量）
-		if quantityDiff > 0 && stockModel.Quantity-stockModel.ReservedQuantity < uint64(quantityDiff) {
+		if quantityDiff > 0 && stockModel.Quantity-stockModel.ReservedQuantity < quantityDiff {
 			return fmt.Errorf("insufficient stock")
 		}
 
@@ -427,7 +427,7 @@ func (s *service) UpdateCartItemQuantity(ctx context.Context, cartID, itemID, ne
 func (s *service) ConvertCartToOrder(ctx context.Context, cartID uint64) (*models.Order, error) {
 	var newOrder *models.Order
 
-	err := s.transactionManager.ExecuteTransaction(ctx, func(tx pgx.Tx) error {
+	if err := s.transactionManager.ExecuteTransaction(ctx, func(tx pgx.Tx) error {
 		var err error
 
 		// 1. 獲取購物車
@@ -462,7 +462,7 @@ func (s *service) ConvertCartToOrder(ctx context.Context, cartID uint64) (*model
 			Total:      cartModel.Total,
 		}
 
-		if err = s.order.CreateOrder(ctx, tx, newOrder); err != nil {
+		if _, err = s.order.CreateOrder(ctx, tx, newOrder); err != nil {
 			return fmt.Errorf("failed to create order: %w", err)
 		}
 
@@ -489,13 +489,13 @@ func (s *service) ConvertCartToOrder(ctx context.Context, cartID uint64) (*model
 
 			reduceStockParams[i] = stock.ReduceStockParams{
 				StockID:     item.StockID,
-				Quantity:    int64(item.Quantity),
+				Quantity:    item.Quantity,
 				LastUpdated: stockModel.UpdatedAt,
 			}
 
 			stockMoveParams[i] = stock.CreateStockMovementParams{
 				StockID:       item.StockID,
-				Quantity:      int64(item.Quantity),
+				Quantity:      item.Quantity,
 				Type:          enum.StockMovementTypeOut,
 				ReferenceID:   newOrder.ID,
 				ReferenceType: enum.StockMovementReferenceTypeOrder,
@@ -523,9 +523,7 @@ func (s *service) ConvertCartToOrder(ctx context.Context, cartID uint64) (*model
 		}
 
 		return nil
-	})
-
-	if err != nil {
+	}); err != nil {
 		return nil, err
 	}
 
@@ -540,8 +538,10 @@ func (s *service) CreateOrder(ctx context.Context, order *models.Order) error {
 			return fmt.Errorf("invalid order data: %w", err)
 		}
 
+		var subtotal, tax, discount, total float64
 		// 2. 創建訂單
-		if err := s.order.CreateOrder(ctx, tx, order); err != nil {
+		orderModel, err := s.order.CreateOrder(ctx, tx, order)
+		if err != nil {
 			return fmt.Errorf("failed to create order: %w", err)
 		}
 
@@ -551,6 +551,7 @@ func (s *service) CreateOrder(ctx context.Context, order *models.Order) error {
 		stockMoveParams := make([]stock.CreateStockMovementParams, len(order.Items))
 
 		for i, item := range order.Items {
+			subtotal += item.Subtotal
 			// 設置訂單項目
 			orderItems[i] = &models.OrderItem{
 				OrderID:   order.ID,
@@ -576,14 +577,14 @@ func (s *service) CreateOrder(ctx context.Context, order *models.Order) error {
 			// 準備庫存調整參數
 			reduceStockParams[i] = stock.ReduceStockParams{
 				StockID:     item.StockID,
-				Quantity:    int64(item.Quantity),
+				Quantity:    item.Quantity,
 				LastUpdated: stockModel.UpdatedAt,
 			}
 
 			// 準備庫存變動記錄參數
 			stockMoveParams[i] = stock.CreateStockMovementParams{
 				StockID:       item.StockID,
-				Quantity:      int64(item.Quantity),
+				Quantity:      item.Quantity,
 				Type:          enum.StockMovementTypeOut,
 				ReferenceID:   order.ID,
 				ReferenceType: enum.StockMovementReferenceTypeOrder,
@@ -605,8 +606,11 @@ func (s *service) CreateOrder(ctx context.Context, order *models.Order) error {
 			return fmt.Errorf("failed to create stock movements: %w", err)
 		}
 
+		tax = subtotal * 0.1 // 假设稅率為 10%
+		discount = 0         // 根據實際情況算折扣 coupon 等等
+		total = subtotal + tax - discount
 		// 7. 更新訂單總計
-		if err := s.order.UpdateOrderTotals(ctx, tx, order.ID); err != nil {
+		if err := s.order.UpdateOrderTotals(ctx, tx, order.ID, tax, subtotal, discount, total, orderModel.UpdatedAt); err != nil {
 			return fmt.Errorf("failed to update order totals: %w", err)
 		}
 
@@ -646,7 +650,7 @@ func (s *service) UpdateOrderStatus(ctx context.Context, orderID uint64, newStat
 		}
 
 		// 3. 更新訂單狀態
-		if err = s.order.UpdateOrderStatus(ctx, tx, orderID, newStatus); err != nil {
+		if err = s.order.UpdateOrderStatus(ctx, tx, orderID, newStatus, orderModel.UpdatedAt); err != nil {
 			return fmt.Errorf("failed to update order status: %w", err)
 		}
 
@@ -671,13 +675,13 @@ func (s *service) UpdateOrderStatus(ctx context.Context, orderID uint64, newStat
 
 				adjustParams[i] = stock.AdjustStockParams{
 					StockID:     item.StockID,
-					Quantity:    int64(item.Quantity),
+					Quantity:    item.Quantity,
 					LastUpdated: stockModel.UpdatedAt,
 				}
 
 				moveParams[i] = stock.CreateStockMovementParams{
 					StockID:       item.StockID,
-					Quantity:      int64(item.Quantity),
+					Quantity:      item.Quantity,
 					Type:          enum.StockMovementTypeIn,
 					ReferenceID:   orderID,
 					ReferenceType: enum.StockMovementReferenceTypeOrder,
@@ -731,7 +735,7 @@ func (s *service) CancelOrder(ctx context.Context, orderID uint64) error {
 		}
 
 		// 3. 更新訂單狀態
-		if err = s.order.UpdateOrderStatus(ctx, tx, orderID, enum.OrderStatusCancelled); err != nil {
+		if err = s.order.UpdateOrderStatus(ctx, tx, orderID, enum.OrderStatusCancelled, orderModel.UpdatedAt); err != nil {
 			return fmt.Errorf("failed to update order status: %w", err)
 		}
 
@@ -753,13 +757,13 @@ func (s *service) CancelOrder(ctx context.Context, orderID uint64) error {
 
 			adjustParams[i] = stock.AdjustStockParams{
 				StockID:     item.StockID,
-				Quantity:    int64(item.Quantity),
+				Quantity:    item.Quantity,
 				LastUpdated: stockModel.UpdatedAt,
 			}
 
 			moveParams[i] = stock.CreateStockMovementParams{
 				StockID:       item.StockID,
-				Quantity:      int64(item.Quantity),
+				Quantity:      item.Quantity,
 				Type:          enum.StockMovementTypeIn,
 				ReferenceID:   orderID,
 				ReferenceType: enum.StockMovementReferenceTypeOrder,

@@ -1,10 +1,11 @@
 package models
 
 import (
+	"time"
+
 	"github.com/stripe/stripe-go/v79"
 	"gofalre.io/shop/models/enum"
 	"gofalre.io/shop/sqlc"
-	"time"
 )
 
 // Cart 代表購物車
@@ -35,15 +36,7 @@ type CartItem struct {
 	Subtotal  float64 `json:"subtotal"`
 }
 
-func NewCart() *Cart {
-	return new(Cart)
-}
-
-func NewCartItem() *CartItem {
-	return new(CartItem)
-}
-
-func (c *Cart) ConvertFromSQLCCart(sqlcCart any) *Cart {
+func (c *Cart) ConvertSqlcCart(sqlcCart any) *Cart {
 
 	var id uint64
 	var customerID string
@@ -54,65 +47,38 @@ func (c *Cart) ConvertFromSQLCCart(sqlcCart any) *Cart {
 
 	switch sp := sqlcCart.(type) {
 	case *sqlc.Cart:
-		id = sp.ID
+		id = uint64(sp.ID)
 		customerID = sp.CustomerID
 		status = enum.CartStatus(sp.Status)
 		currency = stripe.Currency(sp.Currency)
 		subtotal = sp.Subtotal
-		taxFloat8, _ := sp.Tax.Float64Value()
-		if taxFloat8.Valid {
-			subtotal = taxFloat8.Float64
-		}
-		discountFloat8, _ := sp.Discount.Float64Value()
-		if discountFloat8.Valid {
-			subtotal = discountFloat8.Float64
-		}
-		totalFloat8, _ := sp.Total.Float64Value()
-		if totalFloat8.Valid {
-			subtotal = totalFloat8.Float64
-		}
+		tax = sp.Tax
+		discount = sp.Discount
+		total = sp.Total
 		createdAt = sp.CreatedAt.Time
 		updatedAt = sp.UpdatedAt.Time
 		expiresAt = sp.ExpiresAt.Time
 	case *sqlc.GetCartRow:
-		id = sp.ID
+		id = uint64(sp.ID)
 		customerID = sp.CustomerID
 		status = enum.CartStatus(sp.Status)
 		currency = stripe.Currency(sp.Currency)
 		subtotal = sp.Subtotal
-		taxFloat8, _ := sp.Tax.Float64Value()
-		if taxFloat8.Valid {
-			subtotal = taxFloat8.Float64
-		}
-		discountFloat8, _ := sp.Discount.Float64Value()
-		if discountFloat8.Valid {
-			subtotal = discountFloat8.Float64
-		}
-		totalFloat8, _ := sp.Total.Float64Value()
-		if totalFloat8.Valid {
-			subtotal = totalFloat8.Float64
-		}
+		tax = sp.Tax
+		discount = sp.Discount
+		total = sp.Total
 		createdAt = sp.CreatedAt.Time
 		updatedAt = sp.UpdatedAt.Time
 		expiresAt = sp.ExpiresAt.Time
 	case *sqlc.FindActiveCartByCustomerIDRow:
-		id = sp.ID
+		id = uint64(sp.ID)
 		customerID = sp.CustomerID
 		status = enum.CartStatus(sp.Status)
 		currency = stripe.Currency(sp.Currency)
 		subtotal = sp.Subtotal
-		taxFloat8, _ := sp.Tax.Float64Value()
-		if taxFloat8.Valid {
-			subtotal = taxFloat8.Float64
-		}
-		discountFloat8, _ := sp.Discount.Float64Value()
-		if discountFloat8.Valid {
-			subtotal = discountFloat8.Float64
-		}
-		totalFloat8, _ := sp.Total.Float64Value()
-		if totalFloat8.Valid {
-			subtotal = totalFloat8.Float64
-		}
+		tax = sp.Tax
+		discount = sp.Discount
+		total = sp.Total
 		createdAt = sp.CreatedAt.Time
 		updatedAt = sp.UpdatedAt.Time
 		expiresAt = sp.ExpiresAt.Time
@@ -135,7 +101,7 @@ func (c *Cart) ConvertFromSQLCCart(sqlcCart any) *Cart {
 	return c
 }
 
-func (ci *CartItem) ConvertFromSQLCCartItem(sqlcCartItem any) *CartItem {
+func (ci *CartItem) ConvertSqlcCartItem(sqlcCartItem any) *CartItem {
 
 	var id, cartID, stockID, quantity uint64
 	var productID, priceID string
@@ -143,7 +109,7 @@ func (ci *CartItem) ConvertFromSQLCCartItem(sqlcCartItem any) *CartItem {
 
 	switch sp := sqlcCartItem.(type) {
 	case *sqlc.CartItem:
-		id = sp.ID
+		id = uint64(sp.ID)
 		cartID = sp.CartID
 		stockID = sp.StockID
 		quantity = sp.Quantity

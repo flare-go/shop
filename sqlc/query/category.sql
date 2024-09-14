@@ -1,6 +1,6 @@
 -- name: CreateCategory :exec
 INSERT INTO categories (name, description, parent_id, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5);
+VALUES ($1, $2, $3, NOW(), NOW());
 
 -- name: GetCategoryByID :one
 SELECT id, name, description, parent_id, created_at, updated_at

@@ -1,6 +1,7 @@
--- name: CreateOrder :exec
+-- name: CreateOrder :one
 INSERT INTO orders (customer_id, cart_id, status, currency, subtotal, tax, discount, total, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
+RETURNING id, updated_at;
 
 -- name: GetOrder :one
 SELECT id, customer_id, cart_id, status, currency, subtotal, tax, discount, total, created_at, updated_at
@@ -54,20 +55,20 @@ SELECT id, customer_id, cart_id, status, currency, subtotal, tax, discount, tota
 FROM orders
 WHERE payment_intent_id = $1;
 
--- name: GetOrderByChargeID :one
+-- name: GetOrderByRefundID :one
 SELECT id, customer_id, cart_id, status, currency, subtotal, tax, discount, total, created_at, updated_at
 FROM orders
-WHERE charge_id = $1;
+WHERE refund_id = $1;
 
 -- name: GetOrderByInvoiceID :one
 SELECT id, customer_id, cart_id, status, currency, subtotal, tax, discount, total, created_at, updated_at
 FROM orders
 WHERE invoice_id = $1;
 
--- name: UpdateOrderStatusBySubscriptionID :exec
-UPDATE orders
-SET status = $2, updated_at = NOW()
-WHERE subscription_id = $1;
+-- name: GetOrderByCustomerIDAndSubscriptionID :one
+SELECT id, customer_id, cart_id, status, currency, subtotal, tax, discount, total, created_at, updated_at
+FROM orders
+WHERE subscription_id = $1 AND customer_id = $2;
 
 -- name: ListOrdersByStatus :many
 SELECT id, customer_id, cart_id, status, currency, subtotal, tax, discount, total, created_at, updated_at

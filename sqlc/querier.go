@@ -17,7 +17,7 @@ type Querier interface {
 	CreateCart(ctx context.Context, arg CreateCartParams) error
 	CreateCategory(ctx context.Context, arg CreateCategoryParams) error
 	CreateEvent(ctx context.Context, arg CreateEventParams) error
-	CreateOrder(ctx context.Context, arg CreateOrderParams) error
+	CreateOrder(ctx context.Context, arg CreateOrderParams) (*CreateOrderRow, error)
 	CreateStockMovement(ctx context.Context, arg []CreateStockMovementParams) *CreateStockMovementBatchResults
 	DeleteCategory(ctx context.Context, id int32) error
 	DeleteOrder(ctx context.Context, id int32) error
@@ -29,6 +29,10 @@ type Querier interface {
 	GetCategoryByID(ctx context.Context, id int32) (*Category, error)
 	GetEventByID(ctx context.Context, id string) (*Event, error)
 	GetOrder(ctx context.Context, id int32) (*GetOrderRow, error)
+	GetOrderByCustomerIDAndSubscriptionID(ctx context.Context, arg GetOrderByCustomerIDAndSubscriptionIDParams) (*GetOrderByCustomerIDAndSubscriptionIDRow, error)
+	GetOrderByInvoiceID(ctx context.Context, invoiceID *string) (*GetOrderByInvoiceIDRow, error)
+	GetOrderByPaymentIntentID(ctx context.Context, paymentIntentID *string) (*GetOrderByPaymentIntentIDRow, error)
+	GetOrderByRefundID(ctx context.Context, refundID *string) (*GetOrderByRefundIDRow, error)
 	GetOrderItem(ctx context.Context, id int32) (*GetOrderItemRow, error)
 	GetStock(ctx context.Context, id int32) (*Stock, error)
 	GetStockMovementsByReference(ctx context.Context, arg GetStockMovementsByReferenceParams) ([]*StockMovement, error)
@@ -36,6 +40,7 @@ type Querier interface {
 	ListCategories(ctx context.Context, arg ListCategoriesParams) ([]*Category, error)
 	ListOrderItems(ctx context.Context, orderID int32) ([]*ListOrderItemsRow, error)
 	ListOrders(ctx context.Context, arg ListOrdersParams) ([]*ListOrdersRow, error)
+	ListOrdersByStatus(ctx context.Context, arg ListOrdersByStatusParams) ([]*ListOrdersByStatusRow, error)
 	ListStockMovements(ctx context.Context, arg ListStockMovementsParams) ([]*StockMovement, error)
 	ListSubcategories(ctx context.Context, parentID *int32) ([]*Category, error)
 	MarkEventAsProcessed(ctx context.Context, arg MarkEventAsProcessedParams) error

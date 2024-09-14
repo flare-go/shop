@@ -7,25 +7,25 @@ import (
 
 type AdjustStockParams struct {
 	StockID     uint64
-	Quantity    int64
+	Quantity    uint64
 	LastUpdated time.Time
 }
 
 type ReleaseStockParams struct {
 	StockID     uint64
-	Quantity    int64
+	Quantity    uint64
 	LastUpdated time.Time
 }
 
 type ReduceStockParams struct {
 	StockID     uint64
-	Quantity    int64
+	Quantity    uint64
 	LastUpdated time.Time
 }
 
 type CreateStockMovementParams struct {
 	StockID       uint64
-	Quantity      int64
+	Quantity      uint64
 	Type          enum.StockMovementType
 	ReferenceID   uint64
 	ReferenceType enum.StockMovementReferenceType

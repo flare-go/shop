@@ -29,25 +29,17 @@ func (q *Queries) AssignProductToCategory(ctx context.Context, arg AssignProduct
 
 const createCategory = `-- name: CreateCategory :exec
 INSERT INTO categories (name, description, parent_id, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5)
+VALUES ($1, $2, $3, NOW(), NOW())
 `
 
 type CreateCategoryParams struct {
-	Name        string             `json:"name"`
-	Description *string            `json:"description"`
-	ParentID    *int32             `json:"parentId"`
-	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
-	UpdatedAt   pgtype.Timestamptz `json:"updatedAt"`
+	Name        string  `json:"name"`
+	Description *string `json:"description"`
+	ParentID    *int32  `json:"parentId"`
 }
 
 func (q *Queries) CreateCategory(ctx context.Context, arg CreateCategoryParams) error {
-	_, err := q.db.Exec(ctx, createCategory,
-		arg.Name,
-		arg.Description,
-		arg.ParentID,
-		arg.CreatedAt,
-		arg.UpdatedAt,
-	)
+	_, err := q.db.Exec(ctx, createCategory, arg.Name, arg.Description, arg.ParentID)
 	return err
 }
 

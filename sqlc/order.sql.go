@@ -11,26 +11,30 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const createOrder = `-- name: CreateOrder :exec
+const createOrder = `-- name: CreateOrder :one
 INSERT INTO orders (customer_id, cart_id, status, currency, subtotal, tax, discount, total, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
+RETURNING id, updated_at
 `
 
 type CreateOrderParams struct {
-	CustomerID string             `json:"customerId"`
-	CartID     uint64             `json:"cartId"`
-	Status     OrderStatus        `json:"status"`
-	Currency   Currency           `json:"currency"`
-	Subtotal   float64            `json:"subtotal"`
-	Tax        pgtype.Numeric     `json:"tax"`
-	Discount   pgtype.Numeric     `json:"discount"`
-	Total      pgtype.Numeric     `json:"total"`
-	CreatedAt  pgtype.Timestamptz `json:"createdAt"`
-	UpdatedAt  pgtype.Timestamptz `json:"updatedAt"`
+	CustomerID string      `json:"customerId"`
+	CartID     uint64      `json:"cartId"`
+	Status     OrderStatus `json:"status"`
+	Currency   Currency    `json:"currency"`
+	Subtotal   float64     `json:"subtotal"`
+	Tax        float64     `json:"tax"`
+	Discount   float64     `json:"discount"`
+	Total      float64     `json:"total"`
 }
 
-func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) error {
-	_, err := q.db.Exec(ctx, createOrder,
+type CreateOrderRow struct {
+	ID        int32              `json:"id"`
+	UpdatedAt pgtype.Timestamptz `json:"updatedAt"`
+}
+
+func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (*CreateOrderRow, error) {
+	row := q.db.QueryRow(ctx, createOrder,
 		arg.CustomerID,
 		arg.CartID,
 		arg.Status,
@@ -39,10 +43,10 @@ func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) error 
 		arg.Tax,
 		arg.Discount,
 		arg.Total,
-		arg.CreatedAt,
-		arg.UpdatedAt,
 	)
-	return err
+	var i CreateOrderRow
+	err := row.Scan(&i.ID, &i.UpdatedAt)
+	return &i, err
 }
 
 const deleteOrder = `-- name: DeleteOrder :exec
@@ -76,9 +80,9 @@ type GetOrderRow struct {
 	Status     OrderStatus        `json:"status"`
 	Currency   Currency           `json:"currency"`
 	Subtotal   float64            `json:"subtotal"`
-	Tax        pgtype.Numeric     `json:"tax"`
-	Discount   pgtype.Numeric     `json:"discount"`
-	Total      pgtype.Numeric     `json:"total"`
+	Tax        float64            `json:"tax"`
+	Discount   float64            `json:"discount"`
+	Total      float64            `json:"total"`
 	CreatedAt  pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt  pgtype.Timestamptz `json:"updatedAt"`
 }
@@ -86,6 +90,167 @@ type GetOrderRow struct {
 func (q *Queries) GetOrder(ctx context.Context, id int32) (*GetOrderRow, error) {
 	row := q.db.QueryRow(ctx, getOrder, id)
 	var i GetOrderRow
+	err := row.Scan(
+		&i.ID,
+		&i.CustomerID,
+		&i.CartID,
+		&i.Status,
+		&i.Currency,
+		&i.Subtotal,
+		&i.Tax,
+		&i.Discount,
+		&i.Total,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return &i, err
+}
+
+const getOrderByCustomerIDAndSubscriptionID = `-- name: GetOrderByCustomerIDAndSubscriptionID :one
+SELECT id, customer_id, cart_id, status, currency, subtotal, tax, discount, total, created_at, updated_at
+FROM orders
+WHERE subscription_id = $1 AND customer_id = $2
+`
+
+type GetOrderByCustomerIDAndSubscriptionIDParams struct {
+	SubscriptionID *string `json:"subscriptionId"`
+	CustomerID     string  `json:"customerId"`
+}
+
+type GetOrderByCustomerIDAndSubscriptionIDRow struct {
+	ID         int32              `json:"id"`
+	CustomerID string             `json:"customerId"`
+	CartID     uint64             `json:"cartId"`
+	Status     OrderStatus        `json:"status"`
+	Currency   Currency           `json:"currency"`
+	Subtotal   float64            `json:"subtotal"`
+	Tax        float64            `json:"tax"`
+	Discount   float64            `json:"discount"`
+	Total      float64            `json:"total"`
+	CreatedAt  pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt  pgtype.Timestamptz `json:"updatedAt"`
+}
+
+func (q *Queries) GetOrderByCustomerIDAndSubscriptionID(ctx context.Context, arg GetOrderByCustomerIDAndSubscriptionIDParams) (*GetOrderByCustomerIDAndSubscriptionIDRow, error) {
+	row := q.db.QueryRow(ctx, getOrderByCustomerIDAndSubscriptionID, arg.SubscriptionID, arg.CustomerID)
+	var i GetOrderByCustomerIDAndSubscriptionIDRow
+	err := row.Scan(
+		&i.ID,
+		&i.CustomerID,
+		&i.CartID,
+		&i.Status,
+		&i.Currency,
+		&i.Subtotal,
+		&i.Tax,
+		&i.Discount,
+		&i.Total,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return &i, err
+}
+
+const getOrderByInvoiceID = `-- name: GetOrderByInvoiceID :one
+SELECT id, customer_id, cart_id, status, currency, subtotal, tax, discount, total, created_at, updated_at
+FROM orders
+WHERE invoice_id = $1
+`
+
+type GetOrderByInvoiceIDRow struct {
+	ID         int32              `json:"id"`
+	CustomerID string             `json:"customerId"`
+	CartID     uint64             `json:"cartId"`
+	Status     OrderStatus        `json:"status"`
+	Currency   Currency           `json:"currency"`
+	Subtotal   float64            `json:"subtotal"`
+	Tax        float64            `json:"tax"`
+	Discount   float64            `json:"discount"`
+	Total      float64            `json:"total"`
+	CreatedAt  pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt  pgtype.Timestamptz `json:"updatedAt"`
+}
+
+func (q *Queries) GetOrderByInvoiceID(ctx context.Context, invoiceID *string) (*GetOrderByInvoiceIDRow, error) {
+	row := q.db.QueryRow(ctx, getOrderByInvoiceID, invoiceID)
+	var i GetOrderByInvoiceIDRow
+	err := row.Scan(
+		&i.ID,
+		&i.CustomerID,
+		&i.CartID,
+		&i.Status,
+		&i.Currency,
+		&i.Subtotal,
+		&i.Tax,
+		&i.Discount,
+		&i.Total,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return &i, err
+}
+
+const getOrderByPaymentIntentID = `-- name: GetOrderByPaymentIntentID :one
+SELECT id, customer_id, cart_id, status, currency, subtotal, tax, discount, total, created_at, updated_at
+FROM orders
+WHERE payment_intent_id = $1
+`
+
+type GetOrderByPaymentIntentIDRow struct {
+	ID         int32              `json:"id"`
+	CustomerID string             `json:"customerId"`
+	CartID     uint64             `json:"cartId"`
+	Status     OrderStatus        `json:"status"`
+	Currency   Currency           `json:"currency"`
+	Subtotal   float64            `json:"subtotal"`
+	Tax        float64            `json:"tax"`
+	Discount   float64            `json:"discount"`
+	Total      float64            `json:"total"`
+	CreatedAt  pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt  pgtype.Timestamptz `json:"updatedAt"`
+}
+
+func (q *Queries) GetOrderByPaymentIntentID(ctx context.Context, paymentIntentID *string) (*GetOrderByPaymentIntentIDRow, error) {
+	row := q.db.QueryRow(ctx, getOrderByPaymentIntentID, paymentIntentID)
+	var i GetOrderByPaymentIntentIDRow
+	err := row.Scan(
+		&i.ID,
+		&i.CustomerID,
+		&i.CartID,
+		&i.Status,
+		&i.Currency,
+		&i.Subtotal,
+		&i.Tax,
+		&i.Discount,
+		&i.Total,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return &i, err
+}
+
+const getOrderByRefundID = `-- name: GetOrderByRefundID :one
+SELECT id, customer_id, cart_id, status, currency, subtotal, tax, discount, total, created_at, updated_at
+FROM orders
+WHERE refund_id = $1
+`
+
+type GetOrderByRefundIDRow struct {
+	ID         int32              `json:"id"`
+	CustomerID string             `json:"customerId"`
+	CartID     uint64             `json:"cartId"`
+	Status     OrderStatus        `json:"status"`
+	Currency   Currency           `json:"currency"`
+	Subtotal   float64            `json:"subtotal"`
+	Tax        float64            `json:"tax"`
+	Discount   float64            `json:"discount"`
+	Total      float64            `json:"total"`
+	CreatedAt  pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt  pgtype.Timestamptz `json:"updatedAt"`
+}
+
+func (q *Queries) GetOrderByRefundID(ctx context.Context, refundID *string) (*GetOrderByRefundIDRow, error) {
+	row := q.db.QueryRow(ctx, getOrderByRefundID, refundID)
+	var i GetOrderByRefundIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.CustomerID,
@@ -202,9 +367,9 @@ type ListOrdersRow struct {
 	Status     OrderStatus        `json:"status"`
 	Currency   Currency           `json:"currency"`
 	Subtotal   float64            `json:"subtotal"`
-	Tax        pgtype.Numeric     `json:"tax"`
-	Discount   pgtype.Numeric     `json:"discount"`
-	Total      pgtype.Numeric     `json:"total"`
+	Tax        float64            `json:"tax"`
+	Discount   float64            `json:"discount"`
+	Total      float64            `json:"total"`
 	CreatedAt  pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt  pgtype.Timestamptz `json:"updatedAt"`
 }
@@ -218,6 +383,66 @@ func (q *Queries) ListOrders(ctx context.Context, arg ListOrdersParams) ([]*List
 	items := []*ListOrdersRow{}
 	for rows.Next() {
 		var i ListOrdersRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.CustomerID,
+			&i.CartID,
+			&i.Status,
+			&i.Currency,
+			&i.Subtotal,
+			&i.Tax,
+			&i.Discount,
+			&i.Total,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listOrdersByStatus = `-- name: ListOrdersByStatus :many
+SELECT id, customer_id, cart_id, status, currency, subtotal, tax, discount, total, created_at, updated_at
+FROM orders
+WHERE status = $1
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3
+`
+
+type ListOrdersByStatusParams struct {
+	Status OrderStatus `json:"status"`
+	Limit  int64       `json:"limit"`
+	Offset int64       `json:"offset"`
+}
+
+type ListOrdersByStatusRow struct {
+	ID         int32              `json:"id"`
+	CustomerID string             `json:"customerId"`
+	CartID     uint64             `json:"cartId"`
+	Status     OrderStatus        `json:"status"`
+	Currency   Currency           `json:"currency"`
+	Subtotal   float64            `json:"subtotal"`
+	Tax        float64            `json:"tax"`
+	Discount   float64            `json:"discount"`
+	Total      float64            `json:"total"`
+	CreatedAt  pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt  pgtype.Timestamptz `json:"updatedAt"`
+}
+
+func (q *Queries) ListOrdersByStatus(ctx context.Context, arg ListOrdersByStatusParams) ([]*ListOrdersByStatusRow, error) {
+	rows, err := q.db.Query(ctx, listOrdersByStatus, arg.Status, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []*ListOrdersByStatusRow{}
+	for rows.Next() {
+		var i ListOrdersByStatusRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.CustomerID,
@@ -290,9 +515,9 @@ WHERE id = $1 AND updated_at = $6
 type UpdateOrderTotalsParams struct {
 	ID        int32              `json:"id"`
 	Subtotal  float64            `json:"subtotal"`
-	Tax       pgtype.Numeric     `json:"tax"`
-	Discount  pgtype.Numeric     `json:"discount"`
-	Total     pgtype.Numeric     `json:"total"`
+	Tax       float64            `json:"tax"`
+	Discount  float64            `json:"discount"`
+	Total     float64            `json:"total"`
 	UpdatedAt pgtype.Timestamptz `json:"updatedAt"`
 }
 

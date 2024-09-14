@@ -45,6 +45,18 @@
           {
             "column": "*.subtotal",
             "go_type": "float64"
+          },
+          {
+            "column": "*.tax",
+            "go_type": "float64"
+          },
+          {
+            "column": "*.discount",
+            "go_type": "float64"
+          },
+          {
+            "column": "*.total",
+            "go_type": "float64"
           }
         ]
       }

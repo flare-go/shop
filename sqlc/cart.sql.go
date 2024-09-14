@@ -82,9 +82,9 @@ type FindActiveCartByCustomerIDRow struct {
 	Status     CartStatus         `json:"status"`
 	Currency   Currency           `json:"currency"`
 	Subtotal   float64            `json:"subtotal"`
-	Tax        pgtype.Numeric     `json:"tax"`
-	Discount   pgtype.Numeric     `json:"discount"`
-	Total      pgtype.Numeric     `json:"total"`
+	Tax        float64            `json:"tax"`
+	Discount   float64            `json:"discount"`
+	Total      float64            `json:"total"`
 	ExpiresAt  pgtype.Timestamptz `json:"expiresAt"`
 	CreatedAt  pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt  pgtype.Timestamptz `json:"updatedAt"`
@@ -150,9 +150,9 @@ type GetCartRow struct {
 	Status     CartStatus         `json:"status"`
 	Currency   Currency           `json:"currency"`
 	Subtotal   float64            `json:"subtotal"`
-	Tax        pgtype.Numeric     `json:"tax"`
-	Discount   pgtype.Numeric     `json:"discount"`
-	Total      pgtype.Numeric     `json:"total"`
+	Tax        float64            `json:"tax"`
+	Discount   float64            `json:"discount"`
+	Total      float64            `json:"total"`
 	ExpiresAt  pgtype.Timestamptz `json:"expiresAt"`
 	CreatedAt  pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt  pgtype.Timestamptz `json:"updatedAt"`
